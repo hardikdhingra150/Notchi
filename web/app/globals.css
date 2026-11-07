@@ -15,7 +15,7 @@
   --accent2: #ffc64a;
   --accent3: #5b9cff;
   --on-accent: #16130e;
-  --shade-op: 0.22;
+  --shade-op: 0.13;
   color-scheme: light;
 }
 [data-theme="midnight"] {
@@ -45,7 +45,7 @@
   --accent2: #e9c46a;
   --accent3: #d8735a;
   --on-accent: #f3f5ea;
-  --shade-op: 0.2;
+  --shade-op: 0.12;
   color-scheme: light;
 }
 [data-theme="sakura"] {
@@ -60,7 +60,7 @@
   --accent2: #f2a65a;
   --accent3: #7d6bd9;
   --on-accent: #fff4f2;
-  --shade-op: 0.2;
+  --shade-op: 0.12;
   color-scheme: light;
 }
 [data-theme="neon"] {
@@ -221,7 +221,7 @@ html.fine #cur, html.fine #ping { display: block; }
   :root { --gap: 8px; --r: 22px; --bw: 5px; }
   .topbar { top: calc(var(--gap) + 22px); }
   .logo { font-size: 22px; }
-  .toplinks a.lnk { display: none; }
+  .toplinks { display: none; }
   .sn-links { grid-template-columns: repeat(2, auto); }
 }
 

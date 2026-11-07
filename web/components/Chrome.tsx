@@ -40,7 +40,7 @@ export function TopBar() {
           <a key={l.href} href={l.href} className="lnk" onClick={(e) => go(e, l.href)}>{l.label}</a>
         ))}
         <a className="pill sm" href={REPO_URL} target="_blank" rel="noreferrer">
-          <Github /> {stars !== null ? <>Star · {fmtStars(stars)}</> : "Star"}
+          <Github /> {stars ? <>Star · {fmtStars(stars)}</> : "Star"}
         </a>
       </nav>
     </motion.header>
