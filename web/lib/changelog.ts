@@ -1,0 +1,69 @@
+export type Change = { kind: "new" | "better" | "fix"; area: "App" | "Website"; text: string };
+export type Release = { version: string; label: string; date: string; status: "unreleased" | "complete" | "released"; summary: string; changes: Change[] };
+
+/** Newest first. Keep it honest: only what is merged on main. */
+export const RELEASES: Release[] = [
+  {
+    version: "v0.2",
+    label: "Any app, any key",
+    date: "2026-11-07",
+    status: "unreleased",
+    summary: "The notch now follows whatever macOS is playing, has pages you can swipe through, and replaces the macOS volume and brightness indicator for real.",
+    changes: [
+      { kind: "new", area: "App", text: "Now playing from any app: a YouTube tab in Safari or Chrome, Music, Spotify, Podcasts, VLC and more, with the app's icon on the artwork." },
+      { kind: "new", area: "App", text: "Live progress bar with time played and time left in the player." },
+      { kind: "new", area: "App", text: "Pages in the open notch: Home, Now Playing and Shelf. Tap the dots or swipe with two fingers." },
+      { kind: "new", area: "App", text: "Home shows what's playing in a pill with play/pause; tap it to open the player. Pages slide back Home after 10 seconds." },
+      { kind: "new", area: "App", text: "Brightness indicator in the notch, with fine steps on Shift+Option." },
+      { kind: "better", area: "App", text: "Volume and brightness keys are handled by Notchi, so the macOS indicator no longer shows twice." },
+      { kind: "better", area: "App", text: "notchi doctor checks the volume/brightness permission and warns about ad hoc builds." },
+      { kind: "fix", area: "App", text: "Play, pause and skip from the notch now reach the playing app instantly." },
+      { kind: "fix", area: "App", text: "The first click on a notch button no longer gets swallowed." },
+      { kind: "fix", area: "App", text: "The island could get stuck open after a quick in-and-out hover." },
+      { kind: "fix", area: "App", text: "Local builds keep their Accessibility permission between rebuilds (scripts/dev-signing.sh)." },
+    ],
+  },
+  {
+    version: "v0.1",
+    label: "The MVP",
+    date: "2026-11-07",
+    status: "complete",
+    summary: "Everything from Phase 1 of the blueprint. Feature-complete; the first public build is being prepared.",
+    changes: [
+      { kind: "new", area: "App", text: "The notch island: hover to open, with time, date and battery." },
+      { kind: "new", area: "App", text: "Now playing for Music and Spotify with artwork and controls." },
+      { kind: "new", area: "App", text: "Battery, volume, notification and progress activities." },
+      { kind: "new", area: "App", text: "File shelf: drop files on the notch, drag them out or AirDrop them." },
+      { kind: "new", area: "App", text: "Live video wallpaper on every display that pauses when covered or in Low Power Mode." },
+      { kind: "new", area: "App", text: "Icon studio: emoji or image badges and accent tints for folders, with one-click restore." },
+      { kind: "new", area: "App", text: "The notchi command: notify, progress, apply, theme list, wallpaper, icon, status and doctor." },
+      { kind: "new", area: "App", text: "Five built-in themes, a first-launch tour and Open at Login." },
+      { kind: "new", area: "App", text: "Release pipeline with signed Sparkle auto-updates." },
+    ],
+  },
+  {
+    version: "Site v3",
+    label: "Try it in the browser",
+    date: "2026-11-07",
+    status: "released",
+    summary: "The website became something to play with, not just read.",
+    changes: [
+      { kind: "new", area: "Website", text: "A live simulator of the real island on /notch: pages, dots, swipe, player, volume and brightness keys." },
+      { kind: "new", area: "Website", text: "Theme builder that exports a real theme file the app can load." },
+      { kind: "new", area: "Website", text: "⌘K command palette on every page." },
+      { kind: "new", area: "Website", text: "This changelog and an FAQ about privacy and permissions." },
+    ],
+  },
+  {
+    version: "Site v2",
+    label: "A page for every part",
+    date: "2026-11-07",
+    status: "released",
+    summary: "One long page became a landing page plus a page per part of Notchi.",
+    changes: [
+      { kind: "new", area: "Website", text: "Pages for the Notch, Themes, Wallpapers, Icons, CLI and Roadmap, each with its own hero and next/previous cards." },
+      { kind: "new", area: "Website", text: "Explore cards with live previews on the landing page." },
+      { kind: "new", area: "Website", text: "Command reference with copyable recipes, and a sitemap." },
+    ],
+  },
+];

@@ -2,6 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { EXTRA_PAGES, PAGES } from "@/lib/pages";
 import { REPO_URL } from "@/lib/site";
 import { fmtStars, useStars } from "@/lib/useStars";
 import { Arrow, Github, LogoMark, Star } from "./icons";
@@ -76,6 +78,11 @@ export default function Footer() {
             </a>
           </div>
         </Reveal>
+
+        <nav className="foot-pages" aria-label="All pages">
+          {PAGES.map((p) => <Link key={p.href} href={p.href}><em>{p.no}</em>{p.title}</Link>)}
+          {EXTRA_PAGES.map((p) => <Link key={p.href} href={p.href}><em>+</em>{p.title}</Link>)}
+        </nav>
 
         <div className="foot-row">
           <div className="logo"><LogoMark /> Notchi</div>

@@ -96,3 +96,22 @@ function PagerCard({ p, dir, home }: { p?: (typeof PAGES)[number]; dir: "prev" |
     </motion.div>
   );
 }
+
+/** A lighter header for pages outside the product tour (changelog, FAQ). */
+export function SimpleHero({ eyebrow, title, line }: { eyebrow: string; title: string; line: string }) {
+  return (
+    <section className="section simple-hero" data-notch={title}>
+      <div className="wrap">
+        <Reveal y={16}>
+          <nav className="crumbs dark" aria-label="Breadcrumb">
+            <Link href="/">Notchi</Link>
+            <span aria-hidden>/</span>
+            <span aria-current="page">{eyebrow}</span>
+          </nav>
+        </Reveal>
+        <SplitHeading as="h1" text={title} className="sh-title" />
+        <Reveal delay={0.2} y={20}><p className="shead-sub">{line}</p></Reveal>
+      </div>
+    </section>
+  );
+}
