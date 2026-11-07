@@ -42,6 +42,19 @@ export const RELEASES: Release[] = [
     ],
   },
   {
+    version: "Site v4",
+    label: "Sharper details",
+    date: "2026-11-07",
+    status: "released",
+    summary: "Polish you notice: icons that read clearly and a cursor you can always see.",
+    changes: [
+      { kind: "better", area: "Website", text: "The little notch icon next to every section label is now a complete screen-and-notch glyph instead of an open line." },
+      { kind: "fix", area: "Website", text: "The cursor stays visible on dark page heroes and in every theme: an ink ring with a light halo and an accent dot." },
+      { kind: "new", area: "Website", text: "A short intro film for sharing Notchi." },
+      { kind: "new", area: "Website", text: "The site version now shows in the footer, linked to this changelog." },
+    ],
+  },
+  {
     version: "Site v3",
     label: "Try it in the browser",
     date: "2026-11-07",

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { EXTRA_PAGES, PAGES } from "@/lib/pages";
-import { REPO_URL } from "@/lib/site";
+import { REPO_URL, SITE_VERSION } from "@/lib/site";
 import { fmtStars, useStars } from "@/lib/useStars";
 import { Arrow, Github, LogoMark, Star } from "./icons";
 import { SplitHeading, Reveal } from "./ui";
@@ -90,6 +90,7 @@ export default function Footer() {
             <a href={REPO_URL} target="_blank" rel="noreferrer"><Github width={16} height={16} /> GitHub</a>
             <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer">Issues</a>
             <a href={`${REPO_URL}/blob/main/LICENSE`} target="_blank" rel="noreferrer">GPL-3.0</a>
+            <Link href="/changelog" className="foot-ver">Site {SITE_VERSION}</Link>
           </nav>
         </div>
         <p className="legal">

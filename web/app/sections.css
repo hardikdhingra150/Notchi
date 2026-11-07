@@ -911,3 +911,4 @@
 #changes, #questions { padding-top: 30px; }
 .toplinks { gap: clamp(14px, 2.4vw, 44px); }
 @media (max-width: 1180px) { .topbar .logo-word { display: none; } }
+.foot-ver { padding: 6px 10px; border-radius: 999px; border: 2px solid currentColor; font-family: var(--f-mono) !important; }
