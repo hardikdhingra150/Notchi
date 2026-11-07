@@ -4,6 +4,7 @@ import "lenis/dist/lenis.css";
 import "./globals.css";
 import "./sections.css";
 import { SiteNotch, TopBar } from "@/components/Chrome";
+import CommandPalette from "@/components/CommandPalette";
 import Cursor from "@/components/Cursor";
 import Footer from "@/components/Footer";
 import Shade from "@/components/Shade";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Footer />
         </main>
         <div className="mat" aria-hidden />
+        <CommandPalette />
         <Shade />
         <Cursor />
       </body>

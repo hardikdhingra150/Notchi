@@ -17,6 +17,12 @@ export function scrollTo(target: string | number | HTMLElement, duration = 1.6) 
   window.scrollTo({ top, behavior: "smooth" });
 }
 
+/** Freeze page scrolling while a dialog is open. */
+export function setScrollLocked(locked: boolean) {
+  if (lenis) { if (locked) lenis.stop(); else lenis.start(); }
+  document.documentElement.style.overflow = locked ? "hidden" : "";
+}
+
 export default function SmoothScroll() {
   const pathname = usePathname();
 

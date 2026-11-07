@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { PAGES } from "@/lib/pages";
+import { PALETTE_EVENT } from "./CommandPalette";
 import { REPO_URL } from "@/lib/site";
 import { heroPast, heroProgress } from "@/lib/store";
 import { fmtStars, useStars } from "@/lib/useStars";
@@ -23,7 +24,7 @@ export function TopBar() {
   const pathname = usePathname();
 
   return (
-    <motion.header className={`topbar${pathname === "/" ? "" : " on-dark"}`} style={{ opacity, y, pointerEvents: off ? "none" : undefined }}>
+    <motion.header className={`topbar${PAGES.some((p) => p.href === pathname) ? " on-dark" : ""}`} style={{ opacity, y, pointerEvents: off ? "none" : undefined }}>
       <Link href="/" className="logo" aria-label="Notchi home" onClick={() => pathname === "/" && scrollTo(0, 1.4)}>
         <LogoMark /> <span className="logo-word">Notchi</span>
       </Link>
@@ -37,6 +38,10 @@ export function TopBar() {
             </Link>
           );
         })}
+        <button className="cp-trigger" onClick={() => window.dispatchEvent(new Event(PALETTE_EVENT))} aria-label="Open the command palette">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2.6" /><path d="m20 20-4-4" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" /></svg>
+          <kbd>⌘K</kbd>
+        </button>
         <a className="pill sm" href={REPO_URL} target="_blank" rel="noreferrer">
           <Github /> {stars ? <>Star · {fmtStars(stars)}</> : "Star"}
         </a>

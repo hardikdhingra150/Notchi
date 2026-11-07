@@ -42,3 +42,9 @@ export type PageInfo = (typeof PAGES)[number];
 export type PageHref = PageInfo["href"];
 
 export const pageFor = (href: PageHref) => PAGES.find((p) => p.href === href)!;
+
+/** Pages outside the product tour: linked from the footer and the command palette. */
+export const EXTRA_PAGES = [
+  { href: "/changelog", title: "Changelog", card: "What changed in every version." },
+  { href: "/faq", title: "FAQ", card: "Privacy, permissions and how it works." },
+] as const;
