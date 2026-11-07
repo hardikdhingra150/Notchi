@@ -18,11 +18,16 @@ public enum IslandSnapshots {
             ("volume", { $0.activity = .volume(0.62, false) }),
             ("brightness", { $0.activity = .brightness(0.75) }),
             ("expanded-home", { $0.hovering = true; $0.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false) }),
-            ("expanded-player", { $0.hovering = true; $0.nowPlaying = .sample }),
-            ("expanded-video", { $0.hovering = true; $0.nowPlaying = .video }),
+            ("expanded-home-playing", { m in
+                m.hovering = true; m.nowPlaying = .sample
+                m.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false)
+            }),
+            ("expanded-player", { $0.hovering = true; $0.nowPlaying = .sample; $0.page = .player }),
+            ("expanded-video", { $0.hovering = true; $0.nowPlaying = .video; $0.page = .player }),
             ("shelf", { m in
                 m.hovering = true
                 m.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false)
+                m.page = .shelf
                 m.shelf = ["/System/Applications/Notes.app", "/System/Library/CoreServices/Finder.app", "/Applications"].map { URL(fileURLWithPath: $0) }
             }),
         ]

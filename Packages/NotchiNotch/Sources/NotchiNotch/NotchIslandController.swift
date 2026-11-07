@@ -21,6 +21,12 @@ final class IslandPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
+/// The panel never becomes key, so without this the first click on a button would
+/// only "activate" the window and the button would never fire.
+final class FirstClickHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+}
+
 /// Owns the island window, keeps it on the notch, and turns bus events into activities.
 @MainActor
 public final class NotchIslandController {
@@ -48,7 +54,7 @@ public final class NotchIslandController {
         applyTheme(themes.active)
         applyEnergy(energy.budget)
         let p = IslandPanel(frame: .zero)
-        let host = NSHostingView(rootView: IslandView(model: model))
+        let host = FirstClickHostingView(rootView: IslandView(model: model))
         host.frame = NSRect(origin: .zero, size: Self.canvas)
         host.autoresizingMask = [.width, .height]
         p.contentView = host
@@ -64,6 +70,13 @@ public final class NotchIslandController {
         let handler: (NSEvent) -> Void = { [weak self] _ in self?.pointerMoved() }
         if let g = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged], handler: { e in MainActor.assumeIsolated { handler(e) } }) { monitors.append(g) }
         if let l = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged], handler: { e in MainActor.assumeIsolated { handler(e) }; return e }) { monitors.append(l) }
+
+        // Two-finger swipe left/right over the open island changes page.
+        if let sw = NSEvent.addLocalMonitorForEvents(matching: [.scrollWheel], handler: { e in
+            let dx = e.scrollingDeltaX, dy = e.scrollingDeltaY, phase = e.phase, momentum = e.momentumPhase
+            MainActor.assumeIsolated { self.swiped(dx: dx, dy: dy, phase: phase, momentum: momentum) }
+            return e
+        }) { monitors.append(sw) }
 
         bus.events.receive(on: RunLoop.main).sink { [weak self] e in
             MainActor.assumeIsolated { self?.handle(e) }
@@ -93,13 +106,31 @@ public final class NotchIslandController {
             (NSPasteboard(name: .drag).types?.contains(.fileURL) ?? false)
     }
 
+    private var swipeX: CGFloat = 0
+    private var swipeUsed = false
+
+    private func swiped(dx: CGFloat, dy: CGFloat, phase: NSEvent.Phase, momentum: NSEvent.Phase) {
+        guard model.hovering, momentum.isEmpty else { return }
+        if phase.contains(.began) { swipeX = 0; swipeUsed = false }
+        if phase.contains(.ended) || phase.contains(.cancelled) { swipeX = 0; swipeUsed = false; return }
+        guard !swipeUsed, abs(dx) > abs(dy) else { return }
+        swipeX += dx
+        if abs(swipeX) > 36 {
+            swipeUsed = true  // one page per swipe
+            model.step(swipeX < 0 ? 1 : -1)
+        }
+    }
+
     private func pointerMoved() {
         let p = NSEvent.mouseLocation
         // dragging files: open a bit earlier so the shelf is there to catch them
         let margin: CGFloat = isDraggingFiles ? 60 : 10
         let inside = islandRect.insetBy(dx: -margin, dy: -margin).contains(p)
         if inside {
+            // a cancelled task must be cleared too, or the island can never close again
             leaveTask?.cancel()
+            leaveTask = nil
+            if isDraggingFiles { model.go(to: .shelf) } else { model.interacted() }
             if !model.hovering {
                 withAnimation(model.spring) { model.hovering = true }
                 panel?.ignoresMouseEvents = false
@@ -112,6 +143,7 @@ public final class NotchIslandController {
                 self.leaveTask = nil
                 if !self.islandRect.insetBy(dx: -10, dy: -6).contains(NSEvent.mouseLocation), !self.model.dropTargeted {
                     withAnimation(self.model.spring) { self.model.hovering = false }
+                    self.model.resetPage()
                     self.panel?.ignoresMouseEvents = true
                 }
             }

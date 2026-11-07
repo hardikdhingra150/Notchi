@@ -27,11 +27,16 @@ public struct IslandView: View {
         .frame(width: s.width + 2 * ear, height: s.height)
         .modifier(ShelfDrop(model: model))
         .animation(model.spring, value: mode)
-        .animation(model.spring, value: model.showsShelf)
+        .animation(model.spring, value: model.pages)
         .animation(model.spring, value: model.activity)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Notchi island")
+    }
+
+    /// Pages slide in from the side you're heading to.
+    private var pageSlide: AnyTransition {
+        .push(from: model.pageForward ? .trailing : .leading)
     }
 
     @ViewBuilder private func content(_ mode: IslandModel.Mode) -> some View {
@@ -59,21 +64,26 @@ public struct IslandView: View {
         case .expanded:
             VStack(spacing: 0) {
                 Color.clear.frame(height: top)
-                Group {
-                    if let np = model.nowPlaying {
-                        PlayerContent(model: model, np: np)
-                    } else {
-                        HomeContent(model: model)
+                ZStack {
+                    switch model.currentPage {
+                    case .home:
+                        HomeContent(model: model).transition(pageSlide)
+                    case .player:
+                        if let np = model.nowPlaying { PlayerContent(model: model, np: np).transition(pageSlide) }
+                    case .shelf:
+                        ShelfView(model: model).frame(maxHeight: .infinity).transition(pageSlide)
                     }
                 }
                 .frame(height: 114)
-                if model.showsShelf {
-                    ShelfView(model: model)
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                .clipped()
+                if model.pages.count > 1 {
+                    PageDots(model: model)
+                        .frame(height: 14)
+                        .transition(.opacity)
                 }
             }
             .padding(.horizontal, 26)
-            .padding(.bottom, 18)
+            .padding(.bottom, 16)
             .transition(.opacity.combined(with: .scale(scale: 0.94, anchor: .top)))
         }
     }
@@ -174,10 +184,73 @@ struct HomeContent: View {
                     Circle().fill(model.accent).frame(width: 9, height: 9)
                     Text(model.themeName).font(.system(size: 13, weight: .semibold)).foregroundStyle(ink)
                 }
-                Text("Nothing playing").font(.system(size: 12)).foregroundStyle(dim)
+                if let np = model.nowPlaying {
+                    NowPlayingPill(model: model, np: np)
+                } else {
+                    Text("Nothing playing").font(.system(size: 12)).foregroundStyle(dim)
+                }
             }
         }
         .frame(maxHeight: .infinity)
+    }
+}
+
+/// On Home: what's playing, a play/pause button, and a tap opens the full player.
+struct NowPlayingPill: View {
+    @Bindable var model: IslandModel
+    let np: NowPlaying
+    var body: some View {
+        HStack(spacing: 6) {
+            Button { model.go(to: .player) } label: {
+                HStack(spacing: 8) {
+                    Artwork(image: model.artwork, accent: model.accent, size: 26, radius: 6)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(np.title).font(.system(size: 12, weight: .semibold)).foregroundStyle(ink).lineLimit(1)
+                        Text("\(np.isPlaying ? "Playing" : "Paused") · \(np.appName)").font(.system(size: 10.5)).foregroundStyle(dim).lineLimit(1)
+                    }
+                    .frame(maxWidth: 140, alignment: .leading)
+                    Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold)).foregroundStyle(dim)
+                }
+                .padding(.vertical, 5).padding(.leading, 5).padding(.trailing, 8)
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.white.opacity(0.08)))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Now playing: \(np.title). Open the player")
+            ControlButton(symbol: np.isPlaying ? "pause.fill" : "play.fill", size: 14, action: model.onPlayPause)
+        }
+    }
+}
+
+/// One dot per page. The current one is a wider accent capsule; tap a dot to go there.
+struct PageDots: View {
+    @Bindable var model: IslandModel
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(model.pages, id: \.self) { p in
+                let on = p == model.currentPage
+                Button { model.go(to: p) } label: {
+                    Capsule()
+                        .fill(on ? model.accent : Color.white.opacity(0.28))
+                        .frame(width: on ? 18 : 6, height: 6)
+                        .padding(.vertical, 4).padding(.horizontal, 2)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Self.name(p))
+                .accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+        .animation(model.spring, value: model.currentPage)
+        .frame(maxWidth: .infinity)
+    }
+
+    static func name(_ p: IslandModel.Page) -> String {
+        switch p {
+        case .home: "Home"
+        case .player: "Now playing"
+        case .shelf: "File shelf"
+        }
     }
 }
 
