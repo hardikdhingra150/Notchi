@@ -10,6 +10,7 @@ import NotchPlayground from "@/components/NotchPlayground";
 import Receipt from "@/components/Receipt";
 import Roadmap from "@/components/Roadmap";
 import Shade from "@/components/Shade";
+import Shipped from "@/components/Shipped";
 import SmoothScroll from "@/components/SmoothScroll";
 import Terminal from "@/components/Terminal";
 import ThemeStudio from "@/components/ThemeStudio";
@@ -24,6 +25,7 @@ export default function Home() {
         <Hero />
         <Marquee />
         <NotchPlayground />
+        <Shipped />
         <ThemeStudio />
         <Modules />
         <Terminal />
