@@ -92,7 +92,7 @@
 
 /* ───────── Base ───────── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: var(--paper); }
+html { background: var(--paper); overflow-x: clip; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -212,7 +212,7 @@ html.fine #cur, html.fine #ping { display: block; }
 .sn-links a:hover { opacity: 1; color: var(--accent); }
 
 /* ───────── Layout helpers ───────── */
-.section { position: relative; padding: clamp(110px, 14vw, 180px) clamp(28px, 7vw, 120px); }
+.section { position: relative; overflow-x: clip; padding: clamp(110px, 14vw, 180px) clamp(28px, 7vw, 120px); }
 .wrap { max-width: 1280px; margin: 0 auto; position: relative; }
 .split-word { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .06em; margin-bottom: -.06em; }
 .split-word > span { display: inline-block; will-change: transform; }

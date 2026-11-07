@@ -201,10 +201,10 @@
 .tcard.on { outline: 3.5px solid var(--accent); outline-offset: 5px; }
 .tp { border: 3px solid var(--line); border-radius: 16px; overflow: hidden; aspect-ratio: 16 / 10; }
 .tp svg { display: block; width: 100%; height: 100%; }
-.tmeta { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; padding: 14px 6px 6px; }
+.tmeta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px; padding: 14px 6px 6px; }
 .tmeta b { display: block; font: 400 26px/1 var(--f-display); font-variation-settings: "SOFT" 100, "opsz" 144; letter-spacing: -.04em; text-transform: uppercase; }
 .tmeta span { display: block; margin-top: 6px; font: 500 12px/1.3 var(--f-ui); color: var(--muted); }
-.sw { display: flex; flex: none; }
+.sw { display: flex; flex: none; padding-left: 5px; }
 .sw i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); margin-left: -5px; }
 .tbadge { position: absolute; top: -12px; right: -10px; display: inline-flex; gap: 4px; align-items: center; padding: 8px 12px; border-radius: 999px; background: var(--accent); color: var(--on-accent); border: 3px solid var(--line); font: 700 12px/1 var(--f-ui); text-transform: uppercase; letter-spacing: .08em; }
 
