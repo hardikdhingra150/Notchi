@@ -71,3 +71,12 @@ import Testing
         }
     }
 }
+
+@Suite struct BatteryTests {
+    @Test func readingIsInRangeWhenPresent() {
+        // Desktop Macs and CI runners have no battery; laptops must report 0...1.
+        if let b = BatteryMonitor.current() {
+            #expect((0...1).contains(b.level))
+        }
+    }
+}

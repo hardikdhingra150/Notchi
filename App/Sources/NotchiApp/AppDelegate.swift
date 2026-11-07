@@ -7,6 +7,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let bus = EventBus()
     lazy var themes = ThemeEngine(bus: bus)
     lazy var energy = EnergyGovernor(bus: bus)
+    lazy var nowPlaying = NowPlayingService(bus: bus)
+    lazy var battery = BatteryMonitor(bus: bus)
 
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
@@ -18,6 +20,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusMenu = StatusMenu(app: self)
         island = NotchIslandController(bus: bus, themes: themes, energy: energy)
         island?.start()
+        if let model = island?.model {
+            model.onPlayPause = { [weak self] in self?.nowPlaying.playPause() }
+            model.onNext = { [weak self] in self?.nowPlaying.next() }
+            model.onPrevious = { [weak self] in self?.nowPlaying.previous() }
+            nowPlaying.onArtwork = { img in model.artwork = img }
+        }
+        nowPlaying.start()
+        battery.start()
     }
 
     func showSettings() {
