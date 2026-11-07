@@ -789,3 +789,44 @@
   .sim-keys button { width: 50px; height: 46px; }
   .sim-menubar span:not(.sim-apple):not(.sim-mb-right) { display: none; }
 }
+
+/* ---------- theme builder ---------- */
+.tb { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 34px; margin-top: 56px; align-items: start; }
+.tb-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; padding: 24px; border: 3.5px solid var(--line); border-radius: 28px; background: var(--paper); box-shadow: 0 8px 0 -2px var(--paper), 0 8px 0 1.5px var(--line); }
+.tb-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.tb-field.wide { grid-column: 1 / -1; }
+.tb-field > span { display: flex; justify-content: space-between; font: 700 11.5px/1 var(--f-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.tb-field > span em, .tb-field > span b { font: 600 11px/1 var(--f-mono); font-style: normal; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.tb-field input:not([type]), .tb-field select {
+  width: 100%; padding: 11px 12px; border: 2.5px solid var(--line); border-radius: 12px; background: var(--paper2); color: var(--ink);
+  font: 600 14px/1.2 var(--f-ui);
+}
+.tb-field input[type="range"] { accent-color: var(--accent); width: 100%; }
+.tb-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.tb-sw { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--line); transition: transform .2s; }
+.tb-sw.on { transform: scale(1.15); box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--line); }
+.tb-pick { position: relative; width: 34px; height: 34px; border-radius: 50%; border: 3px dashed var(--line); display: grid; place-items: center; font: 700 18px/1 var(--f-ui); cursor: pointer; }
+.tb-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.tb-seg { align-self: flex-start; }
+.tb-seg button { padding: 9px 14px; }
+.tb-out { display: flex; flex-direction: column; gap: 16px; }
+.tb-preview { position: relative; height: 230px; border: 3.5px solid var(--line); border-radius: 24px; overflow: hidden; }
+.tb-island { position: absolute; left: 50%; top: 0; translate: -50% 0; display: flex; align-items: center; gap: 10px; padding: 14px 20px 12px; border-radius: 0 0 20px 20px; background: #000; color: #f3efe6; font: 600 13px/1 var(--f-ui); white-space: nowrap; }
+.tb-island i { width: 22px; height: 22px; border-radius: 7px; }
+.tb-sun { position: absolute; right: 12%; top: 34%; width: 54px; height: 54px; border-radius: 50%; }
+.tb-win { position: absolute; left: 10%; top: 38%; width: 46%; height: 42%; border-radius: 14px; border: 2px solid rgba(127,127,127,.4); display: flex; gap: 6px; padding: 10px; }
+.tb-win span { width: 10px; height: 10px; border-radius: 50%; background: rgba(127,127,127,.5); }
+.tb-dock { position: absolute; left: 50%; bottom: 10px; translate: -50% 0; display: flex; gap: 8px; padding: 7px 10px; border-radius: 14px; background: rgba(127,127,127,.25); }
+.tb-dock i { width: 24px; height: 24px; border-radius: 7px; }
+.tb-dock[data-style="vertical"] { left: auto; right: 10px; bottom: 50%; translate: 0 50%; flex-direction: column; }
+.tb-dock[data-style="minimal"] { background: transparent; }
+.tb-dock[data-style="centered-pill"] { border-radius: 999px; }
+.tb-json { border-radius: 20px; background: var(--line); color: var(--paper); overflow: hidden; }
+.tb-json-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1.5px solid color-mix(in srgb, var(--paper) 18%, transparent); font: 600 12px/1 var(--f-mono); }
+.tb-json-bar button { width: 34px; height: 34px; border-radius: 10px; border: 2px solid color-mix(in srgb, var(--paper) 35%, transparent); display: grid; place-items: center; color: var(--paper); }
+.tb-json pre { max-height: 260px; overflow: auto; padding: 14px 16px; font: 500 12px/1.55 var(--f-mono); }
+.tb-dl { align-self: flex-start; }
+.tb-steps { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font: 500 14px/1.5 var(--f-ui); color: var(--muted); }
+.tb-steps code { font: 600 12.5px/1 var(--f-mono); color: var(--ink); overflow-wrap: anywhere; }
+@media (max-width: 1000px) { .tb { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .tb-controls { grid-template-columns: 1fr; } }
