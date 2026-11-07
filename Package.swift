@@ -12,12 +12,22 @@ let package = Package(
         .library(name: "NotchiWallpaper", targets: ["NotchiWallpaper"]),
         .library(name: "NotchiIcons", targets: ["NotchiIcons"]),
     ],
+    dependencies: [
+        // auto-updates, with its own free EdDSA signing (blueprint section 13)
+        .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.10.0"),
+    ],
     targets: [
         .target(name: "NotchiCore", path: "Packages/NotchiCore/Sources/NotchiCore"),
         .target(name: "NotchiNotch", dependencies: ["NotchiCore"], path: "Packages/NotchiNotch/Sources/NotchiNotch"),
         .target(name: "NotchiWallpaper", dependencies: ["NotchiCore"], path: "Packages/NotchiWallpaper/Sources/NotchiWallpaper"),
         .target(name: "NotchiIcons", dependencies: ["NotchiCore"], path: "Packages/NotchiIcons/Sources/NotchiIcons"),
-        .executableTarget(name: "NotchiApp", dependencies: ["NotchiCore", "NotchiNotch", "NotchiWallpaper", "NotchiIcons"], path: "App/Sources/NotchiApp"),
+        .executableTarget(
+            name: "NotchiApp",
+            dependencies: ["NotchiCore", "NotchiNotch", "NotchiWallpaper", "NotchiIcons", .product(name: "Sparkle", package: "Sparkle")],
+            path: "App/Sources/NotchiApp",
+            // Sparkle.framework is copied into Notchi.app/Contents/Frameworks by scripts/bundle.sh
+            linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
+        ),
         .executableTarget(name: "notchi", dependencies: ["NotchiCore", "NotchiIcons"], path: "CLI/notchi/Sources"),
         .testTarget(name: "NotchiCoreTests", dependencies: ["NotchiCore"], path: "Tests/NotchiCoreTests"),
         .testTarget(name: "NotchiIconsTests", dependencies: ["NotchiIcons"], path: "Tests/NotchiIconsTests"),

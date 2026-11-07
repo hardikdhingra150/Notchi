@@ -1,0 +1,95 @@
+name: Release
+
+# Push a tag like v0.1.0 (or v0.1.0-beta.1 for a pre-release) to publish.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  SPARKLE_VERSION: "2.10.0"
+  # secrets can't be used in step `if:` directly
+  HAS_CERT: ${{ secrets.NOTCHI_CERT_P12 != '' }}
+  HAS_SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY != '' }}
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        run: |
+          echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          echo "BUILD=${{ github.run_number }}" >> $GITHUB_ENV
+
+      # Optional: the free self-signed certificate (see docs/RELEASING.md).
+      # Without it the app is signed ad hoc and macOS permissions reset on each update.
+      - name: Import signing certificate
+        if: env.HAS_CERT == 'true'
+        env:
+          P12: ${{ secrets.NOTCHI_CERT_P12 }}
+          P12_PASSWORD: ${{ secrets.NOTCHI_CERT_PASSWORD }}
+        run: |
+          KC=$RUNNER_TEMP/notchi.keychain-db
+          security create-keychain -p ci "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p ci "$KC"
+          echo "$P12" | base64 --decode > $RUNNER_TEMP/cert.p12
+          security import $RUNNER_TEMP/cert.p12 -k "$KC" -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci "$KC"
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          echo "NOTCHI_SIGN_ID=${{ secrets.NOTCHI_SIGN_ID }}" >> $GITHUB_ENV
+
+      - name: Build universal app
+        env:
+          ARCHS: arm64 x86_64
+          NOTCHI_ED_PUBLIC_KEY: ${{ vars.NOTCHI_ED_PUBLIC_KEY }}
+        run: ./scripts/bundle.sh
+
+      - name: Package
+        run: |
+          cd dist
+          ditto -c -k --keepParent Notchi.app "Notchi-$VERSION.zip"
+          tar -czf "notchi-cli-$VERSION.tar.gz" notchi
+          shasum -a 256 "Notchi-$VERSION.zip" "notchi-cli-$VERSION.tar.gz" > SHA256SUMS.txt
+
+      # Sparkle update feed, signed with Notchi's own EdDSA key (free).
+      - name: Sign update and write appcast
+        if: env.HAS_SPARKLE_KEY == 'true'
+        env:
+          SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          mkdir -p $RUNNER_TEMP/sparkle
+          curl -sL "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz" | tar -xJ -C $RUNNER_TEMP/sparkle
+          SIG=$(echo "$SPARKLE_KEY" | $RUNNER_TEMP/sparkle/bin/sign_update --ed-key-file - "dist/Notchi-$VERSION.zip")
+          URL="https://github.com/${{ github.repository }}/releases/download/$GITHUB_REF_NAME/Notchi-$VERSION.zip"
+          cat > dist/appcast.xml <<XML
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>Notchi</title>
+              <item>
+                <title>Notchi $VERSION</title>
+                <sparkle:version>$BUILD</sparkle:version>
+                <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+                <sparkle:releaseNotesLink>https://github.com/${{ github.repository }}/releases/tag/$GITHUB_REF_NAME</sparkle:releaseNotesLink>
+                <pubDate>$(date -R)</pubDate>
+                <enclosure url="$URL" $SIG type="application/octet-stream"/>
+              </item>
+            </channel>
+          </rss>
+          XML
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          FLAGS=""
+          [[ "$GITHUB_REF_NAME" == *-* ]] && FLAGS="--prerelease"
+          FILES="dist/Notchi-$VERSION.zip dist/notchi-cli-$VERSION.tar.gz dist/SHA256SUMS.txt"
+          [[ -f dist/appcast.xml ]] && FILES="$FILES dist/appcast.xml"
+          gh release create "$GITHUB_REF_NAME" $FILES --title "Notchi $VERSION" --generate-notes $FLAGS

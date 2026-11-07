@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var island: NotchIslandController?
     private var ipc: IPCServer?
     private var onboarding: OnboardingWindowController?
+    let updater = Updater()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         themes.reload()

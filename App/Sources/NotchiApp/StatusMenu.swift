@@ -69,6 +69,9 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         login.target = self
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(login)
+        if app.updater.isEnabled {
+            menu.addItem(withTitle: "Check for Updates…", action: #selector(checkUpdates), keyEquivalent: "").target = self
+        }
         menu.addItem(withTitle: "Welcome Tour…", action: #selector(openTour), keyEquivalent: "").target = self
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
         menu.addItem(.separator())
@@ -104,6 +107,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
 
     @objc private func openSettings() { app.showSettings() }
     @objc private func openTour() { app.showOnboarding() }
+    @objc private func checkUpdates() { app.updater.checkForUpdates() }
 
     @objc private func toggleLogin() {
         LoginItem.toggle()
