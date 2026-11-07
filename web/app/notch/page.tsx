@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero, PagePager } from "@/components/PageShell";
 import NotchComponents from "@/components/NotchComponents";
-import NotchPlayground from "@/components/NotchPlayground";
+import NotchSimulator from "@/components/NotchSimulator";
 import Shipped from "@/components/Shipped";
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <>
       <PageHero href="/notch" />
-      <NotchPlayground />
+      <NotchSimulator />
       <Shipped />
       <NotchComponents />
       <PagePager href="/notch" />
