@@ -6,6 +6,15 @@
 
 > Not affiliated with the other open-source project named "notchi" (the Claude Code notch mascot). Notchi here is the whole-desktop theming suite.
 
+## The notch island (v0.1 in progress)
+
+| Music | Terminal | Progress |
+|---|---|---|
+| ![Player](docs/snapshots/expanded-player.png) | ![Notify](docs/snapshots/notify.png) | ![Progress](docs/snapshots/progress.png) |
+| ![Home](docs/snapshots/expanded-home.png) | ![Battery](docs/snapshots/battery.png) | ![Compact](docs/snapshots/compact-music.png) |
+
+Regenerate with `dist/Notchi.app/Contents/MacOS/Notchi --snapshot docs/snapshots`.
+
 ## Repo layout
 
 | Folder | What it is |
