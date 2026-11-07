@@ -31,6 +31,7 @@ static void emit(NSDictionary *obj) {
 }
 
 static NSUInteger lastArtHash;
+static void run_command(const char *c, const char *arg);
 
 static void refresh(void) {
     MRGetInfo getInfo = (MRGetInfo)mr("MRMediaRemoteGetNowPlayingInfo");
@@ -88,9 +89,23 @@ void notchi_stream(void *interp, void *cv) {
         }
         // stop when Notchi goes away (stdin closes)
         dispatch_source_t src = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, STDIN_FILENO, 0, dispatch_get_main_queue());
+        static NSMutableData *pending;
+        pending = [NSMutableData data];
         dispatch_source_set_event_handler(src, ^{
-            char buf[64];
-            if (read(STDIN_FILENO, buf, sizeof buf) <= 0) exit(0);
+            char buf[256];
+            ssize_t n = read(STDIN_FILENO, buf, sizeof buf);
+            if (n <= 0) exit(0);
+            [pending appendBytes:buf length:(NSUInteger)n];
+            // handle every complete line: "toggle", "next", "seek 42.5"
+            while (1) {
+                NSRange nl = [pending rangeOfData:[NSData dataWithBytes:"\n" length:1] options:0 range:NSMakeRange(0, pending.length)];
+                if (nl.location == NSNotFound) break;
+                NSString *line = [[NSString alloc] initWithData:[pending subdataWithRange:NSMakeRange(0, nl.location)] encoding:NSUTF8StringEncoding];
+                [pending replaceBytesInRange:NSMakeRange(0, nl.location + 1) withBytes:NULL length:0];
+                NSArray<NSString *> *parts = [line componentsSeparatedByString:@" "];
+                if (parts.count == 0 || parts[0].length == 0) continue;
+                run_command(parts[0].UTF8String, parts.count > 1 ? parts[1].UTF8String : NULL);
+            }
         });
         dispatch_resume(src);
         refresh();
@@ -98,14 +113,20 @@ void notchi_stream(void *interp, void *cv) {
     }
 }
 
-// Called from perl with NOTCHI_MR_COMMAND set: play, pause, toggle, next, previous, or seek (NOTCHI_MR_ARG seconds).
+// One-shot mode: NOTCHI_MR_COMMAND = play, pause, toggle, next, previous, or seek (NOTCHI_MR_ARG seconds).
+// The stream mode above also takes the same commands on stdin, which is what Notchi uses.
 void notchi_command(void *interp, void *cv) {
     const char *c = getenv("NOTCHI_MR_COMMAND");
     if (!c) return;
+    run_command(c, getenv("NOTCHI_MR_ARG"));
+    // the command goes out over XPC asynchronously; don't exit before it's delivered
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.4]];
+}
+
+static void run_command(const char *c, const char *arg) {
     if (strcmp(c, "seek") == 0) {
         MRSetElapsed set = (MRSetElapsed)mr("MRMediaRemoteSetElapsedTime");
-        const char *a = getenv("NOTCHI_MR_ARG");
-        if (set && a) set(atof(a));
+        if (set && arg) set(atof(arg));
         return;
     }
     int cmd = -1;

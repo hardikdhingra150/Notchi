@@ -19,6 +19,7 @@ final class MediaRemoteBridge {
 
     private let paths: Paths
     private var process: Process?
+    private var input: FileHandle?
     private var buffer = Data()
     private var restarts = 0
     private var gotData = false
@@ -36,7 +37,9 @@ final class MediaRemoteBridge {
         p.arguments = [paths.script.path, paths.library.path, "stream"]
         let out = Pipe()
         p.standardOutput = out
-        p.standardInput = Pipe()  // the helper quits when this closes (Notchi quits)
+        let inPipe = Pipe()
+        p.standardInput = inPipe  // commands go in here; the helper quits when it closes (Notchi quits)
+        input = inPipe.fileHandleForWriting
         p.standardError = FileHandle.nullDevice
         out.fileHandleForReading.readabilityHandler = { [weak self] h in
             let chunk = h.availableData
@@ -54,27 +57,33 @@ final class MediaRemoteBridge {
         process = nil
     }
 
-    /// play, pause, toggle, next, previous
+    /// play, pause, toggle, next, previous. Goes to the running helper, so it's instant.
     func send(_ command: String) {
+        guard process?.isRunning == true, let input else { return oneShot(command, arg: nil) }
+        try? input.write(contentsOf: Data((command + "\n").utf8))
+    }
+
+    func seek(to seconds: Double) {
+        guard process?.isRunning == true, let input else { return oneShot("seek", arg: String(seconds)) }
+        try? input.write(contentsOf: Data("seek \(seconds)\n".utf8))
+    }
+
+    /// If the stream helper isn't running, start a short-lived one just for this command.
+    private func oneShot(_ command: String, arg: String?) {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/perl")
         p.arguments = [paths.script.path, paths.library.path, "command"]
-        p.environment = ["NOTCHI_MR_COMMAND": command]
+        var env = ["NOTCHI_MR_COMMAND": command]
+        if let arg { env["NOTCHI_MR_ARG"] = arg }
+        p.environment = env
         p.standardOutput = FileHandle.nullDevice
         p.standardError = FileHandle.nullDevice
         try? p.run()
     }
 
-    func seek(to seconds: Double) {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/perl")
-        p.arguments = [paths.script.path, paths.library.path, "command"]
-        p.environment = ["NOTCHI_MR_COMMAND": "seek", "NOTCHI_MR_ARG": String(seconds)]
-        try? p.run()
-    }
-
     private func exited() {
         process = nil
+        input = nil
         // restart a few times if it crashes; give up after that
         guard restarts < (gotData ? 5 : 2) else {
             if !gotData { onFailure() }
