@@ -10,6 +10,15 @@ public enum IslandActivity: Equatable, Sendable {
     case theme(String)
     case battery(BatteryState)
     case volume(Double, Bool)
+    case brightness(Double)
+
+    /// Volume and brightness use the smaller level indicator.
+    var isLevel: Bool {
+        switch self {
+        case .volume, .brightness: return true
+        default: return false
+        }
+    }
 }
 
 /// All island state lives here (no @State, so it builds without Xcode's SwiftUI macros).
@@ -64,7 +73,7 @@ public final class IslandModel {
         case .closed: return CGSize(width: w, height: h)
         case .compact: return CGSize(width: w + 2 * (h + 14), height: h)
         case .banner:
-            if case .volume = activity { return CGSize(width: max(w + 110, 320), height: h + 40) }
+            if activity?.isLevel == true { return CGSize(width: max(w + 110, 320), height: h + 40) }
             return CGSize(width: max(w + 150, 380), height: h + 50)
         case .expanded: return CGSize(width: max(w + 300, 520), height: h + 132 + (showsShelf ? 84 : 0))
         }

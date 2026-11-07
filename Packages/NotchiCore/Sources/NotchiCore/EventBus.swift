@@ -10,6 +10,7 @@ public enum NotchiEvent: Sendable {
     case progress(value: Double, label: String)
     case energy(EnergyGovernor.Budget)
     case volume(level: Double, muted: Bool)
+    case brightness(level: Double)
 }
 
 public struct NowPlaying: Equatable, Sendable {

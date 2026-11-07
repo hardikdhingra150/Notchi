@@ -139,21 +139,12 @@ struct BannerContent: View {
                 Text("\(Int(b.level * 100))%").font(.system(size: 14, weight: .semibold)).foregroundStyle(ink)
             }
         case .volume(let v, let muted):
-            HStack(spacing: 12) {
-                Image(systemName: muted || v == 0 ? "speaker.slash.fill" : v < 0.34 ? "speaker.wave.1.fill" : v < 0.67 ? "speaker.wave.2.fill" : "speaker.wave.3.fill")
-                    .font(.system(size: 15, weight: .bold)).foregroundStyle(ink)
-                    .frame(width: 24)
-                    .contentTransition(.symbolEffect(.replace))
-                GeometryReader { g in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Color.white.opacity(0.14))
-                        Capsule().fill(muted ? dim : model.accent).frame(width: max(7, g.size.width * v))
-                    }
-                }
-                .frame(height: 7)
-                .animation(.spring(response: 0.25, dampingFraction: 0.9), value: v)
-            }
-            .accessibilityLabel(muted ? "Muted" : "Volume \(Int(v * 100)) percent")
+            LevelHUD(symbol: muted || v == 0 ? "speaker.slash.fill" : v < 0.34 ? "speaker.wave.1.fill" : v < 0.67 ? "speaker.wave.2.fill" : "speaker.wave.3.fill",
+                     value: v, dimmed: muted, accent: model.accent)
+                .accessibilityLabel(muted ? "Muted" : "Volume \(Int((v * 100).rounded())) percent")
+        case .brightness(let b):
+            LevelHUD(symbol: b < 0.5 ? "sun.min.fill" : "sun.max.fill", value: b, dimmed: false, accent: model.accent)
+                .accessibilityLabel("Brightness \(Int((b * 100).rounded())) percent")
         case nil:
             EmptyView()
         }
@@ -307,6 +298,30 @@ struct ShelfDrop: ViewModifier {
             content.onDrop(of: [.fileURL], isTargeted: Binding(get: { model.dropTargeted }, set: { v in withAnimation(model.spring) { model.dropTargeted = v } })) { providers in
                 Shelf.load(providers, into: model)
             }
+        }
+    }
+}
+
+/// Volume and brightness: an icon and a bar in the theme accent.
+struct LevelHUD: View {
+    let symbol: String
+    let value: Double
+    let dimmed: Bool
+    let accent: Color
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.system(size: 15, weight: .bold)).foregroundStyle(ink)
+                .frame(width: 24)
+                .contentTransition(.symbolEffect(.replace))
+            GeometryReader { g in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.14))
+                    Capsule().fill(dimmed ? dim : accent).frame(width: max(7, g.size.width * value))
+                }
+            }
+            .frame(height: 7)
+            .animation(.spring(response: 0.25, dampingFraction: 0.9), value: value)
         }
     }
 }
