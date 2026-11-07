@@ -10,8 +10,9 @@ type Shot = { src: string; title: string; line: string; cmd?: string; tall?: boo
 /** Rendered straight from the app with `Notchi --snapshot`. Not mockups. */
 const SHOTS: Shot[] = [
   { src: "closed", title: "Resting", line: "Sits over the notch with a soft breathing glow in your theme colour." },
-  { src: "compact-music", title: "Now playing", line: "Album art and a live visualizer hug the notch while Music or Spotify plays." },
-  { src: "expanded-player", title: "Hover to open", line: "Play, pause and skip without leaving what you're doing." },
+  { src: "compact-music", title: "Now playing", line: "Artwork and a live visualizer hug the notch while anything plays." },
+  { src: "expanded-player", title: "Hover to open", line: "Play, pause, skip and see how far in you are." },
+  { src: "expanded-video", title: "YouTube & any app", line: "A video in Safari or Chrome shows up too, with the app's icon." },
   { src: "expanded-home", title: "Home", line: "Time, date and battery at a glance." },
   { src: "volume", title: "Volume", line: "Takes over from the macOS volume indicator, so only one shows." },
   { src: "brightness", title: "Brightness", line: "Same for the brightness keys. Shift+Option for fine steps." },
@@ -23,7 +24,7 @@ const SHOTS: Shot[] = [
 ];
 
 const DONE = [
-  "Notch island", "Now playing + controls", "Volume & brightness HUD", "File shelf",
+  "Notch island", "Now playing (any app)", "Volume & brightness HUD", "File shelf",
   "Live video wallpaper", "Icon studio", "notchi CLI", "Onboarding", "Auto-updates",
 ];
 
@@ -50,7 +51,7 @@ export default function Shipped() {
     <section className="section shipped" id="shipped" data-notch="v0.1 is real">
       <div className="wrap">
         <SectionHead
-          eyebrow="v0.1 · built so far"
+          eyebrow="Notch · real screenshots"
           title={"Already\nworking"}
           sub="No mockups. Every frame below is rendered from the real app with Notchi --snapshot, straight from the repo."
         />
