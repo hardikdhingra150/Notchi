@@ -33,6 +33,11 @@ open dist/Notchi.app
 cd web && npm install && npm run dev
 ```
 
+### Building without Xcode
+Notchi builds with just the Command Line Tools. Those don't ship the SwiftUI macro plugin,
+so **don't use `@State`, `@Entry` or `#Preview`**. Keep view state in an `@Observable` model
+and pass it with `@Bindable`, or use a plain `Binding(get:set:)`.
+
 ## Pull requests
 1. Fork, branch from `main`, keep PRs focused on one thing.
 2. `swift build && swift test` must pass (CI checks it).

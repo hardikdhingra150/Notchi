@@ -1,1 +1,10 @@
-print("Notchi app coming up")
+import AppKit
+
+// Notchi is a menu-bar app: no Dock icon, no main window.
+MainActor.assumeIsolated {
+    let app = NSApplication.shared
+    let delegate = AppDelegate()
+    app.delegate = delegate
+    app.setActivationPolicy(.accessory)
+    withExtendedLifetime(delegate) { app.run() }
+}
