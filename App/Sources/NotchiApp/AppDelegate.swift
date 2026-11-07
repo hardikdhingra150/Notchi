@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
     private(set) var island: NotchIslandController?
+    private var ipc: IPCServer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         themes.reload()
@@ -28,6 +29,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         nowPlaying.start()
         battery.start()
+        ipc = IPCServer(app: self)
+        ipc?.start()
     }
 
     func showSettings() {

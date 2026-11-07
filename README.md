@@ -11,8 +11,35 @@
 | Folder | What it is |
 |---|---|
 | `web/` | The website (Next.js, deployed on Vercel) |
-| `App/`, `Packages/`, `CLI/` | The native macOS app and the `notchi` CLI (coming in Phase 2) |
+| `App/` | The menu-bar app (`Notchi.app`) |
+| `Packages/NotchiCore` | Theme engine, event bus, energy governor, notch detection, Now Playing, battery |
+| `Packages/NotchiNotch` | The notch island and its live activities |
+| `CLI/notchi` | The `notchi` command-line tool |
+| `Themes/` | Built-in themes |
 | `PROJECT_BLUEPRINT.md` | The full product plan |
+
+## Build and run the app
+
+macOS 14+ and Swift 6 (Xcode or just the Command Line Tools).
+
+```bash
+./scripts/bundle.sh        # builds dist/Notchi.app and dist/notchi
+open dist/Notchi.app       # hover the notch to open it
+./scripts/test.sh          # run the tests
+```
+
+## The `notchi` command
+
+```bash
+notchi notify "Build done ✅"          # show a message in the notch
+notchi progress 42 "Exporting"         # show progress (100 hides it)
+notchi apply midnight                  # apply a theme
+notchi theme list                      # list themes
+notchi status                          # what the notch is showing
+notchi doctor                          # check setup and conflicts
+```
+
+Use it in scripts: `npm run build && notchi notify "Build done ✅" || notchi notify "Build failed ❌"`
 
 ## Run the website
 

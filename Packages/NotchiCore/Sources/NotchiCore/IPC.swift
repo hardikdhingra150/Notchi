@@ -5,7 +5,7 @@ import Foundation
 public enum IPCCommand: Codable, Equatable, Sendable {
     case notify(message: String)
     case progress(value: Double, label: String)
-    case apply(theme: String)
+    case apply(theme: String, replyTo: String?)
     case ping(replyTo: String)
 }
 
@@ -15,9 +15,14 @@ public struct IPCReply: Codable, Equatable, Sendable {
     public var themes: [String]?
     public var activeTheme: String?
     public var version: String?
+    public var island: String?
+    public var nowPlaying: String?
+    public var hardwareNotch: Bool?
 
-    public init(ok: Bool, message: String, themes: [String]? = nil, activeTheme: String? = nil, version: String? = nil) {
+    public init(ok: Bool, message: String, themes: [String]? = nil, activeTheme: String? = nil, version: String? = nil,
+                island: String? = nil, nowPlaying: String? = nil, hardwareNotch: Bool? = nil) {
         self.ok = ok; self.message = message; self.themes = themes; self.activeTheme = activeTheme; self.version = version
+        self.island = island; self.nowPlaying = nowPlaying; self.hardwareNotch = hardwareNotch
     }
 }
 
