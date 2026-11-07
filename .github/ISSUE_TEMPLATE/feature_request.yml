@@ -1,0 +1,13 @@
+name: Feature or theme idea
+description: Suggest a module, notch activity or theme
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes: { label: What would you like?, description: What problem does it solve, or what would it look like? }
+    validations: { required: true }
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options: [Notch island, Live wallpaper, Icon studio, Glass sidebar, Dock, Menu bar, Effects, Desktop widgets, AI themes, CLI, Website, Other]

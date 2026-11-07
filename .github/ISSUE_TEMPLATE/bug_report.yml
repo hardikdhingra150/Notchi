@@ -1,0 +1,23 @@
+name: Bug report
+description: Something in Notchi is broken
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes: { label: What happened?, description: Include a screenshot or recording if you can. }
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes: { label: Steps to reproduce }
+  - type: input
+    id: macos
+    attributes: { label: macOS version, placeholder: "macOS 26.1" }
+    validations: { required: true }
+  - type: dropdown
+    id: mac
+    attributes:
+      label: Mac
+      options: [Apple silicon with notch, Apple silicon without notch, Intel, External display]
+  - type: textarea
+    id: doctor
+    attributes: { label: Output of `notchi doctor`, render: shell }

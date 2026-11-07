@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "paper",
+  "name": "Paper",
+  "author": "notchi",
+  "version": "1.0.0",
+  "appearance": "light",
+  "accent": "#FF6A3D",
+  "glass": {
+    "blur": 0.6,
+    "tint": 0.2
+  },
+  "wallpaper": {
+    "type": "shader",
+    "src": "ink-tide.metal",
+    "fps": 30
+  },
+  "icons": {
+    "pack": "default",
+    "tintFolders": true
+  },
+  "notch": {
+    "glow": "accent",
+    "idle": "breathing",
+    "visualizer": true
+  },
+  "sidebar": {
+    "widgets": [
+      "nowPlaying",
+      "calendar",
+      "stats"
+    ]
+  },
+  "dock": {
+    "style": "floating-glass",
+    "magnify": 1.4
+  },
+  "menuBar": {
+    "tint": "accent",
+    "opacity": 0.4
+  },
+  "sounds": {
+    "pack": "soft-pencil"
+  },
+  "cursor": {
+    "trail": "ring"
+  }
+}

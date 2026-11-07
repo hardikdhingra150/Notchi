@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "midnight",
+  "name": "Midnight",
+  "author": "notchi",
+  "version": "1.0.0",
+  "appearance": "dark",
+  "accent": "#8F7CFF",
+  "glass": {
+    "blur": 0.85,
+    "tint": 0.3
+  },
+  "wallpaper": {
+    "type": "shader",
+    "src": "starfield.metal",
+    "fps": 30
+  },
+  "icons": {
+    "pack": "default",
+    "tintFolders": true
+  },
+  "notch": {
+    "glow": "accent",
+    "idle": "sparks",
+    "visualizer": true
+  },
+  "sidebar": {
+    "widgets": [
+      "nowPlaying",
+      "calendar",
+      "stats"
+    ]
+  },
+  "dock": {
+    "style": "minimal",
+    "magnify": 1.4
+  },
+  "menuBar": {
+    "tint": "accent",
+    "opacity": 0.4
+  },
+  "sounds": {
+    "pack": "low-hum"
+  },
+  "cursor": {
+    "trail": "comet"
+  }
+}
