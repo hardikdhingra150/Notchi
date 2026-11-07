@@ -9,10 +9,11 @@ import { Github, LogoMark, Star } from "./icons";
 import { scrollTo } from "./SmoothScroll";
 
 const LINKS = [
-  { href: "#live", label: "Live" },
-  { href: "#themes", label: "Themes" },
-  { href: "#modules", label: "Modules" },
-  { href: "#cli", label: "CLI" },
+  { href: "#notch", label: "Notch" },
+  { href: "#theming", label: "Themes" },
+  { href: "#wallpapers", label: "Wallpapers" },
+  { href: "#icons", label: "Icons" },
+  { href: "#terminal", label: "CLI" },
   { href: "#install", label: "Install" },
   { href: "#roadmap", label: "Roadmap" },
 ];
