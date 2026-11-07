@@ -10,3 +10,4 @@ out/
 DerivedData/
 *.xcuserstate
 xcuserdata/
+.claude/
