@@ -78,7 +78,7 @@ export default function Install() {
       <div className="wrap">
         <SectionHead center eyebrow="Get Notchi" title={"Three steps\nto a new Mac"} sub="macOS 14 Sonoma or later, on Apple silicon and Intel, with or without a notch. Macs without one get a virtual island." />
         <Reveal className="inst-status" delay={0.2}>
-          <span className="live-dot" /> v0.1 public beta is being built in the open. Star the repo to hear when it ships.
+          <span className="live-dot" /> v0.1 is feature-complete. The first public build lands soon, so star the repo to hear when it ships.
         </Reveal>
         <div className="steps">
           {STEPS.map((s, i) => (

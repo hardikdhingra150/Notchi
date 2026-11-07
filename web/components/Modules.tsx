@@ -6,9 +6,9 @@ import { ModIcons } from "./icons";
 import { SectionHead } from "./ui";
 
 const MODS = [
-  { k: "notch", name: "Notch island", line: "Live activities, file shelf, clipboard, quick notes and a webcam mirror, all in the notch." },
-  { k: "wallpaper", name: "Live wallpaper", line: "Video, Metal shaders and particles that react to your cursor, music and the time of day." },
-  { k: "icons", name: "Icon studio", line: "Icon packs, emoji folder icons, accent retinting, and one-click restore." },
+  { k: "notch", live: true, name: "Notch island", line: "Live activities, file shelf, clipboard, quick notes and a webcam mirror, all in the notch." },
+  { k: "wallpaper", live: true, name: "Live wallpaper", line: "Video, Metal shaders and particles that react to your cursor, music and the time of day." },
+  { k: "icons", live: true, name: "Icon studio", line: "Icon packs, emoji folder icons, accent retinting, and one-click restore." },
   { k: "sidebar", name: "Glass sidebar", line: "Your own Notification Center: calendar, to-dos, stats, toggles, world clocks." },
   { k: "dock", name: "Dock", line: "Floating glass, minimal, vertical or pill. Window previews and app groups." },
   { k: "menubar", name: "Menu bar", line: "A tinted glass bar, a custom clock and stats, and no more clutter icons." },
@@ -61,7 +61,7 @@ export default function Modules() {
                     <motion.i layout transition={{ type: "spring", stiffness: 600, damping: 30 }} />
                   </button>
                 </div>
-                <h3>{m.name}</h3>
+                <h3>{m.name}{"live" in m && <span className="mod-live">v0.1</span>}</h3>
                 <p>{m.line}</p>
                 <span className="mod-no">0{i + 1}</span>
               </motion.article>
