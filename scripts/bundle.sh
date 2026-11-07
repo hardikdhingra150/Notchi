@@ -25,6 +25,12 @@ cp "$BIN/notchi" "$APP/Contents/Helpers/notchi"
 # Sparkle (auto-updates)
 SPARKLE="$(find "$BIN" .build/artifacts -name Sparkle.framework -type d -prune 2>/dev/null | grep -v dSYM | head -1)"
 [[ -n "$SPARKLE" ]] && ditto "$SPARKLE" "$APP/Contents/Frameworks/Sparkle.framework"
+# system-wide Now Playing helper: loaded into /usr/bin/perl (see Helpers/MediaRemoteBridge)
+MR_ARCHS=()
+for a in ${=ARCHS:-$(uname -m)}; do MR_ARCHS+=(-arch "$a"); done
+clang -dynamiclib -fobjc-arc -O2 "${MR_ARCHS[@]}" -mmacosx-version-min=14.0 -framework Foundation \
+  Helpers/MediaRemoteBridge/MediaRemoteBridge.m -o "$APP/Contents/Resources/MediaRemoteBridge.dylib"
+cp Helpers/MediaRemoteBridge/notchi-nowplaying.pl "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -56,6 +62,7 @@ SIGN="${NOTCHI_SIGN_ID:--}"
 RUNTIME=()
 [[ "${NOTCHI_HARDENED:-0}" == "1" ]] && RUNTIME=(--options runtime)
 codesign --force "${RUNTIME[@]}" --sign "$SIGN" "$APP/Contents/Helpers/notchi"
+codesign --force --sign "$SIGN" "$APP/Contents/Resources/MediaRemoteBridge.dylib"
 if [[ -d "$APP/Contents/Frameworks/Sparkle.framework" ]]; then
   codesign --force --deep "${RUNTIME[@]}" --sign "$SIGN" "$APP/Contents/Frameworks/Sparkle.framework"
 fi

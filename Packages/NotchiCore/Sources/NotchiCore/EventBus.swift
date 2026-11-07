@@ -19,15 +19,29 @@ public struct NowPlaying: Equatable, Sendable {
     public var album: String
     public var isPlaying: Bool
     public var duration: Double?
+    /// Seconds into the track at `positionDate` (it keeps moving while playing).
     public var position: Double?
+    public var positionDate: Date?
     public var source: Source
+    /// The app that's playing, e.g. "Safari" for a YouTube tab.
+    public var appName: String
+    public var bundleID: String?
     public var artworkPNG: Data?
 
-    public enum Source: String, Sendable { case music = "Music", spotify = "Spotify" }
+    public enum Source: String, Sendable { case music = "Music", spotify = "Spotify", system = "System" }
 
-    public init(title: String, artist: String, album: String, isPlaying: Bool, duration: Double? = nil, position: Double? = nil, source: Source, artworkPNG: Data? = nil) {
+    public init(title: String, artist: String, album: String, isPlaying: Bool, duration: Double? = nil, position: Double? = nil,
+                positionDate: Date? = nil, source: Source, appName: String? = nil, bundleID: String? = nil, artworkPNG: Data? = nil) {
         self.title = title; self.artist = artist; self.album = album; self.isPlaying = isPlaying
-        self.duration = duration; self.position = position; self.source = source; self.artworkPNG = artworkPNG
+        self.duration = duration; self.position = position; self.positionDate = positionDate; self.source = source
+        self.appName = appName ?? source.rawValue; self.bundleID = bundleID; self.artworkPNG = artworkPNG
+    }
+
+    /// Where playback is right now, moving forward while it plays.
+    public func elapsed(at now: Date = .now) -> Double? {
+        guard let position else { return nil }
+        let moved = isPlaying ? now.timeIntervalSince(positionDate ?? now) : 0
+        return min(max(position + moved, 0), duration ?? .infinity)
     }
 }
 

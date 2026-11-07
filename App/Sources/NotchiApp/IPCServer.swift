@@ -29,7 +29,7 @@ final class IPCServer {
                                    themes: app.themes.themes.map(\.id), activeTheme: app.themes.active.id), to: token)
             }
         case .ping(let token):
-            let np = app.nowPlaying.current.map { "\($0.title) · \($0.artist) (\($0.source.rawValue)\($0.isPlaying ? "" : ", paused"))" }
+            let np = app.nowPlaying.current.map { "\($0.title) · \($0.artist) (\($0.appName)\($0.isPlaying ? "" : ", paused"))" }
             IPC.reply(IPCReply(
                 ok: true, message: "pong", themes: app.themes.themes.map(\.id), activeTheme: app.themes.active.id,
                 version: Version.string, island: app.island.map { "\($0.model.mode)" }, nowPlaying: np,

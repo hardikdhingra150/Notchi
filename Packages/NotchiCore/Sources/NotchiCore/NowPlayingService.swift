@@ -1,7 +1,11 @@
 import AppKit
 import Foundation
 
-/// What's playing in Music or Spotify, using only public, documented routes:
+/// What's playing.
+///
+/// First choice: the system-wide Now Playing (MediaRemoteBridge), which covers every
+/// app macOS shows in Control Center, YouTube in a browser included.
+/// Fallback (bridge missing or blocked): Music and Spotify only, using public routes:
 /// - both apps broadcast track changes as distributed notifications (no permission needed)
 /// - artwork and controls go through AppleScript (macOS asks for Automation permission once)
 @MainActor
@@ -13,9 +17,45 @@ public final class NowPlayingService {
     /// Fired when artwork for the current track is ready.
     public var onArtwork: (NSImage?) -> Void = { _ in }
 
+    private var bridge: MediaRemoteBridge?
+    private var lastArtwork: NSImage?
+    /// true when every app's playback is shown, not just Music and Spotify.
+    public var isSystemWide: Bool { bridge != nil }
+
     public init(bus: EventBus) { self.bus = bus }
 
     public func start() {
+        if let b = MediaRemoteBridge() {
+            bridge = b
+            b.onUpdate = { [weak self] np, art in self?.bridgeUpdate(np, art) }
+            b.onFailure = { [weak self] in
+                self?.bridge = nil
+                self?.startNotifications()
+            }
+            b.start()
+            return
+        }
+        startNotifications()
+    }
+
+    private func bridgeUpdate(_ np: NowPlaying?, _ art: NSImage??) {
+        guard let np else {
+            if current != nil { current = nil; bus.post(.nowPlaying(nil)) }
+            return
+        }
+        if case .some(let img) = art {
+            // no artwork (many web videos): show the playing app's icon instead
+            let icon = np.bundleID.flatMap { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) }
+                .map { NSWorkspace.shared.icon(forFile: $0.path) }
+            lastArtwork = img ?? icon
+            onArtwork(lastArtwork)
+        }
+        guard np != current else { return }
+        current = np
+        bus.post(.nowPlaying(np))
+    }
+
+    private func startNotifications() {
         let dnc = DistributedNotificationCenter.default()
         observers.append(dnc.addObserver(forName: .init("com.apple.Music.playerInfo"), object: nil, queue: .main) { [weak self] n in
             let info = Self.sendable(n.userInfo)
@@ -69,9 +109,14 @@ public final class NowPlayingService {
 
     public func playPause() { send("playpause") }
     public func next() { send("next track") }
+    public func seek(to seconds: Double) { bridge?.seek(to: seconds) }
     public func previous() { send("previous track") }
 
     private func send(_ command: String) {
+        if let bridge {
+            bridge.send(command == "playpause" ? "toggle" : command == "next track" ? "next" : "previous")
+            return
+        }
         guard let src = current?.source, Self.isRunning(src) else { return }
         let app = src == .music ? "Music" : "Spotify"
         Self.run("tell application \"\(app)\" to \(command)")

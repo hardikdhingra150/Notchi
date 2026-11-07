@@ -12,6 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build
         run: swift build -c release
+      - name: Build Now Playing helper
+        run: clang -dynamiclib -fobjc-arc -Wall -Werror -framework Foundation Helpers/MediaRemoteBridge/MediaRemoteBridge.m -o /tmp/MediaRemoteBridge.dylib
       - name: Test
         run: swift test
 
