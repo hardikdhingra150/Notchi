@@ -32,6 +32,13 @@ public final class IslandModel {
     public var animate = true
     public var reduceMotion = false
 
+    // file shelf
+    public var shelf: [URL] = []
+    public var dropTargeted = false
+    /// Rendering to an image (snapshots): skip AppKit-backed modifiers ImageRenderer can't draw.
+    public var isSnapshot = false
+    var showsShelf: Bool { !shelf.isEmpty || dropTargeted }
+
     // controls, wired up by the controller
     public var onPlayPause: () -> Void = {}
     public var onNext: () -> Void = {}
@@ -59,7 +66,7 @@ public final class IslandModel {
         case .banner:
             if case .volume = activity { return CGSize(width: max(w + 110, 320), height: h + 40) }
             return CGSize(width: max(w + 150, 380), height: h + 50)
-        case .expanded: return CGSize(width: max(w + 300, 520), height: h + 132)
+        case .expanded: return CGSize(width: max(w + 300, 520), height: h + 132 + (showsShelf ? 84 : 0))
         }
     }
 
@@ -77,6 +84,17 @@ public final class IslandModel {
             guard !Task.isCancelled, let self else { return }
             withAnimation(self.spring) { self.activity = nil }
         }
+    }
+
+    public func addToShelf(_ urls: [URL]) {
+        withAnimation(spring) {
+            for u in urls where !shelf.contains(u) { shelf.append(u) }
+            if shelf.count > 12 { shelf.removeFirst(shelf.count - 12) }
+        }
+    }
+
+    public func removeFromShelf(_ url: URL) {
+        withAnimation(spring) { shelf.removeAll { $0 == url } }
     }
 
     public func clearActivity() {

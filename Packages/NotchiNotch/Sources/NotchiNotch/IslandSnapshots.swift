@@ -18,15 +18,21 @@ public enum IslandSnapshots {
             ("volume", { $0.activity = .volume(0.62, false) }),
             ("expanded-home", { $0.hovering = true; $0.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false) }),
             ("expanded-player", { $0.hovering = true; $0.nowPlaying = .sample }),
+            ("shelf", { m in
+                m.hovering = true
+                m.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false)
+                m.shelf = ["/System/Applications/Notes.app", "/System/Library/CoreServices/Finder.app", "/Applications"].map { URL(fileURLWithPath: $0) }
+            }),
         ]
         for (name, setup) in cases {
             let m = IslandModel()
             m.notchSize = CGSize(width: 185, height: 32)
             m.accent = Color(.sRGB, red: accent.red, green: accent.green, blue: accent.blue, opacity: 1)
             m.animate = false
+            m.isSnapshot = true
             setup(m)
             let view = IslandView(model: m)
-                .frame(width: 600, height: 200)
+                .frame(width: 600, height: 290)
                 .background(Color(red: 0.92, green: 0.9, blue: 0.83))
             let r = ImageRenderer(content: view)
             r.scale = 2

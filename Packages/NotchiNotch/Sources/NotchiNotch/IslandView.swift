@@ -25,7 +25,9 @@ public struct IslandView: View {
                 .clipped()
         }
         .frame(width: s.width + 2 * ear, height: s.height)
+        .modifier(ShelfDrop(model: model))
         .animation(model.spring, value: mode)
+        .animation(model.spring, value: model.showsShelf)
         .animation(model.spring, value: model.activity)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .accessibilityElement(children: .contain)
@@ -57,10 +59,17 @@ public struct IslandView: View {
         case .expanded:
             VStack(spacing: 0) {
                 Color.clear.frame(height: top)
-                if let np = model.nowPlaying {
-                    PlayerContent(model: model, np: np)
-                } else {
-                    HomeContent(model: model)
+                Group {
+                    if let np = model.nowPlaying {
+                        PlayerContent(model: model, np: np)
+                    } else {
+                        HomeContent(model: model)
+                    }
+                }
+                .frame(height: 114)
+                if model.showsShelf {
+                    ShelfView(model: model)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
             }
             .padding(.horizontal, 26)
@@ -285,5 +294,19 @@ struct BatteryBar: View {
             RoundedRectangle(cornerRadius: 2.5).fill(accent).padding(2.5).frame(width: max(8, 40 * level))
         }
         .frame(width: 40, height: 18)
+    }
+}
+
+/// Accept dropped files on the whole island (skipped when rendering snapshots).
+struct ShelfDrop: ViewModifier {
+    @Bindable var model: IslandModel
+    func body(content: Content) -> some View {
+        if model.isSnapshot {
+            content
+        } else {
+            content.onDrop(of: [.fileURL], isTargeted: Binding(get: { model.dropTargeted }, set: { v in withAnimation(model.spring) { model.dropTargeted = v } })) { providers in
+                Shelf.load(providers, into: model)
+            }
+        }
     }
 }

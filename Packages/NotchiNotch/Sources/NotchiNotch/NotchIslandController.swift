@@ -87,9 +87,17 @@ public final class NotchIslandController {
         return NSRect(x: g.rect.midX - s.width / 2, y: g.screenFrame.maxY - s.height, width: s.width, height: s.height)
     }
 
+    /// True while the user is dragging files (from Finder or anywhere).
+    private var isDraggingFiles: Bool {
+        NSEvent.pressedMouseButtons & 1 == 1 &&
+            (NSPasteboard(name: .drag).types?.contains(.fileURL) ?? false)
+    }
+
     private func pointerMoved() {
         let p = NSEvent.mouseLocation
-        let inside = islandRect.insetBy(dx: -10, dy: -6).contains(p)
+        // dragging files: open a bit earlier so the shelf is there to catch them
+        let margin: CGFloat = isDraggingFiles ? 60 : 10
+        let inside = islandRect.insetBy(dx: -margin, dy: -margin).contains(p)
         if inside {
             leaveTask?.cancel()
             if !model.hovering {
@@ -102,7 +110,7 @@ public final class NotchIslandController {
                 try? await Task.sleep(for: .milliseconds(220))
                 guard let self, !Task.isCancelled else { return }
                 self.leaveTask = nil
-                if !self.islandRect.insetBy(dx: -10, dy: -6).contains(NSEvent.mouseLocation) {
+                if !self.islandRect.insetBy(dx: -10, dy: -6).contains(NSEvent.mouseLocation), !self.model.dropTargeted {
                     withAnimation(self.model.spring) { self.model.hovering = false }
                     self.panel?.ignoresMouseEvents = true
                 }
