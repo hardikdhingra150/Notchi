@@ -91,6 +91,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     }
 }
 
+@MainActor
 enum LoginItem {
     static var isEnabled: Bool { SMAppService.mainApp.status == .enabled }
 

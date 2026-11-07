@@ -1,5 +1,6 @@
 import AppKit
 import NotchiCore
+import NotchiNotch
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -9,11 +10,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
+    private(set) var island: NotchIslandController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         themes.reload()
         _ = energy
         statusMenu = StatusMenu(app: self)
+        island = NotchIslandController(bus: bus, themes: themes, energy: energy)
+        island?.start()
     }
 
     func showSettings() {
