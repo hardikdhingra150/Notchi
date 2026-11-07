@@ -55,17 +55,29 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 SIGN="${NOTCHI_SIGN_ID:--}"
+SIGN_LABEL="${NOTCHI_SIGN_ID:-ad hoc}"
+KC_ARGS=()
+# Local dev identity from scripts/dev-signing.sh: same signature on every rebuild,
+# so macOS keeps Notchi's Accessibility permission between builds.
+DEVKC="$HOME/Library/Application Support/Notchi/DevSigning/notchi-dev.keychain-db"
+if [[ -z "${NOTCHI_SIGN_ID:-}" && -f "$DEVKC" ]]; then
+  security unlock-keychain -p "$(cat "${DEVKC:h}/password")" "$DEVKC"
+  SIGN="Notchi Local Dev"
+  SIGN_LABEL="Notchi Local Dev"
+  KC_ARGS=(--keychain "$DEVKC")
+fi
 # Hardened runtime turns on library validation, which only accepts frameworks
 # signed by the same Apple Team ID. Ad hoc and self-signed builds have no team,
 # so the embedded Sparkle.framework would be rejected at launch. Only opt in
 # when signing with a real Developer ID (NOTCHI_HARDENED=1).
 RUNTIME=()
 [[ "${NOTCHI_HARDENED:-0}" == "1" ]] && RUNTIME=(--options runtime)
-codesign --force "${RUNTIME[@]}" --sign "$SIGN" "$APP/Contents/Helpers/notchi"
-codesign --force --sign "$SIGN" "$APP/Contents/Resources/MediaRemoteBridge.dylib"
+codesign --force "${KC_ARGS[@]}" "${RUNTIME[@]}" --sign "$SIGN" "$APP/Contents/Helpers/notchi"
+codesign --force "${KC_ARGS[@]}" --sign "$SIGN" "$APP/Contents/Resources/MediaRemoteBridge.dylib"
 if [[ -d "$APP/Contents/Frameworks/Sparkle.framework" ]]; then
-  codesign --force --deep "${RUNTIME[@]}" --sign "$SIGN" "$APP/Contents/Frameworks/Sparkle.framework"
+  codesign --force --deep "${KC_ARGS[@]}" "${RUNTIME[@]}" --sign "$SIGN" "$APP/Contents/Frameworks/Sparkle.framework"
 fi
-codesign --force "${RUNTIME[@]}" --sign "$SIGN" "$APP"
-codesign --force --sign "$SIGN" dist/notchi
-echo "Built $APP and dist/notchi (signed with: ${NOTCHI_SIGN_ID:-ad hoc})"
+codesign --force "${KC_ARGS[@]}" "${RUNTIME[@]}" --sign "$SIGN" "$APP"
+codesign --force "${KC_ARGS[@]}" --sign "$SIGN" dist/notchi
+echo "Built $APP and dist/notchi (signed with: $SIGN_LABEL)"
+[[ "$SIGN" == "-" ]] && echo "Tip: run ./scripts/dev-signing.sh once so Accessibility permission survives rebuilds."

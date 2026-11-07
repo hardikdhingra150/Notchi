@@ -128,6 +128,9 @@ case "doctor":
                       hud == "needs Accessibility access" ? "macOS indicator still shows; allow Notchi in System Settings > Privacy & Security > Accessibility"
                       : hud == "on" ? "volume and brightness show in the notch" : hud)
             }
+            if r.adHocSigned == true {
+                check(false, "Signing", "ad hoc: macOS forgets Accessibility on every rebuild. Run ./scripts/dev-signing.sh once, rebuild, then allow Notchi again")
+            }
         }
     }
     let info = ProcessInfo.processInfo

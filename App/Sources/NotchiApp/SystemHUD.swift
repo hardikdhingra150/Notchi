@@ -1,6 +1,7 @@
 import AppKit
 import NotchiCore
 import Observation
+import Security
 
 /// Replaces the macOS volume and brightness HUD with the notch.
 ///
@@ -19,6 +20,20 @@ final class SystemHUD {
     }
 
     static let defaultsKey = "replaceSystemHUD"
+
+    /// Ad hoc builds get a new signature every rebuild, and macOS drops the
+    /// Accessibility grant with it. Shown by `notchi doctor`.
+    static var isAdHocSigned: Bool {
+        var code: SecCode?
+        guard SecCodeCopySelf([], &code) == errSecSuccess, let code else { return false }
+        var staticCode: SecStaticCode?
+        guard SecCodeCopyStaticCode(code, [], &staticCode) == errSecSuccess, let staticCode else { return false }
+        var info: CFDictionary?
+        guard SecCodeCopySigningInformation(staticCode, SecCSFlags(rawValue: kSecCSSigningInformation), &info) == errSecSuccess,
+              let dict = info as? [String: Any] else { return false }
+        let flags = (dict[kSecCodeInfoFlags as String] as? NSNumber)?.uint32Value ?? 0
+        return flags & SecCodeSignatureFlags.adhoc.rawValue != 0
+    }
     private(set) var state: State = .off
 
     @ObservationIgnored private let tap = MediaKeyTap()
@@ -52,6 +67,15 @@ final class SystemHUD {
     /// Ask macOS for Accessibility access again (from the menu or Settings).
     func requestPermission() {
         UserDefaults.standard.set(true, forKey: Self.defaultsKey)
+        // A rebuilt or updated Notchi can leave a stale entry that looks switched on
+        // but no longer applies. Clear Notchi's own entry so macOS asks afresh.
+        if !MediaKeyTap.isTrusted(prompt: false), let id = Bundle.main.bundleIdentifier {
+            let reset = Process()
+            reset.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            reset.arguments = ["reset", "Accessibility", id]
+            try? reset.run()
+            reset.waitUntilExit()
+        }
         activate(prompt: true)
         if state == .needsPermission,
            let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {

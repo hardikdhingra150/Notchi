@@ -34,7 +34,9 @@ public final class MediaKeyTap {
     @discardableResult
     public func start() -> Bool {
         if tap != nil { return true }
-        let mask = CGEventMask(1 << 14)  // NX_SYSDEFINED
+        // NX_SYSDEFINED (media keys) plus plain key down/up: some keyboards send the
+        // brightness keys as key codes 144/145 instead of media-key events.
+        let mask = CGEventMask(1 << 14) | CGEventMask(1 << CGEventType.keyDown.rawValue) | CGEventMask(1 << CGEventType.keyUp.rawValue)
         guard let port = CGEvent.tapCreate(
             tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
             eventsOfInterest: mask, callback: mediaKeyCallback,
@@ -58,6 +60,12 @@ public final class MediaKeyTap {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }  // macOS switched us off; switch back on
             return false
+        }
+        if type == .keyDown || type == .keyUp {
+            let code = event.getIntegerValueField(.keyboardEventKeycode)
+            let key: Key? = code == 144 ? .brightnessUp : code == 145 ? .brightnessDown : nil
+            guard let key else { return false }
+            return handler(key, type == .keyDown, NSEvent.ModifierFlags(rawValue: UInt(event.flags.rawValue)))
         }
         guard type.rawValue == 14, let ns = NSEvent(cgEvent: event), ns.subtype.rawValue == 8 else { return false }
         let data = ns.data1
