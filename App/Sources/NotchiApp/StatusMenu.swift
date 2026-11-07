@@ -1,5 +1,6 @@
 import AppKit
 import NotchiCore
+import NotchiIcons
 import ServiceManagement
 
 /// The menu-bar icon and its menu.
@@ -55,6 +56,12 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         wpItem.submenu = wp
         menu.addItem(wpItem)
 
+        let changed = IconStudio().load().count
+        let restore = NSMenuItem(title: changed > 0 ? "Restore \(changed) Original Icon\(changed == 1 ? "" : "s")" : "Restore Original Icons", action: #selector(restoreIcons), keyEquivalent: "")
+        restore.target = self
+        restore.isEnabled = changed > 0
+        menu.addItem(restore)
+
         menu.addItem(withTitle: "Test the Notch", action: #selector(testNotch), keyEquivalent: "t").target = self
         menu.addItem(.separator())
 
@@ -84,6 +91,11 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     }
 
     @objc private func wallpaperOff() { app.wallpaper.turnOff() }
+
+    @objc private func restoreIcons() {
+        let n = IconStudio().restoreAll()
+        app.bus.post(.notify(message: "Restored \(n) original icon\(n == 1 ? "" : "s")"))
+    }
 
     @objc private func testNotch() {
         app.bus.post(.notify(message: "Hello from Notchi 👋"))

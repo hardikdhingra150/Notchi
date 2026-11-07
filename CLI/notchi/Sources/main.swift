@@ -1,5 +1,6 @@
 import AppKit
 import NotchiCore
+import NotchiIcons
 
 // notchi: talk to the Notchi app from your terminal (blueprint section 12).
 
@@ -22,6 +23,10 @@ Usage:
   notchi theme list                  list installed themes
   notchi wallpaper set <video>       loop a video behind your desktop icons
   notchi wallpaper off               go back to your normal wallpaper
+  notchi icon set <path> [🚀|img.png] [--tint #hex|accent]
+                                     give a folder or file a new icon
+  notchi icon restore <path>|--all   put the original icons back
+  notchi icon list                   icons Notchi has changed
   notchi status                      what the notch is showing right now
   notchi doctor                      check that everything is set up
   notchi --version
@@ -145,7 +150,51 @@ case "wallpaper":
         fail("usage: notchi wallpaper set <file>  |  notchi wallpaper off")
     }
 
-case "icon", "profile", "export":
+case "icon":
+    let studio = IconStudio()
+    /// --tint #RRGGBB, or --tint accent for the active theme's colour
+    func tint() -> HexColor? {
+        guard let i = args.firstIndex(of: "--tint"), i + 1 < args.count else { return nil }
+        if args[i + 1] == "accent" {
+            guard isAppRunning, let hex = request({ .ping(replyTo: $0) })?.accent else { fail("--tint accent needs Notchi running") }
+            return HexColor(hex)
+        }
+        guard let c = HexColor(args[i + 1]) else { fail("--tint wants a colour like #FF6A3D, or accent") }
+        return c
+    }
+    // positional args, minus --tint and its value
+    var rest = Array(args.dropFirst(2))
+    if let i = rest.firstIndex(of: "--tint") { rest.removeSubrange(i..<min(i + 2, rest.count)) }
+    rest.removeAll { $0 == "--all" }
+    switch args.dropFirst().first {
+    case "set":
+        guard rest.count >= 1 else { fail("usage: notchi icon set <path> [emoji|image.png] [--tint #hex|accent]") }
+        let badge = rest.count >= 2 ? IconStudio.badge(from: rest[1]) : .none
+        do {
+            try studio.set(rest[0], badge: badge, tint: tint())
+            out("✓ New icon on \((rest[0] as NSString).lastPathComponent). Undo: notchi icon restore \(rest[0])")
+        } catch { fail("\(error)") }
+    case "restore":
+        if args.contains("--all") {
+            out("✓ Restored \(studio.restoreAll()) original icon(s)")
+        } else {
+            guard let path = rest.first else { fail("usage: notchi icon restore <path> | --all") }
+            out(studio.restore(path) ? "✓ Original icon is back" : "Nothing to restore at \(path)")
+        }
+    case "list":
+        let all = studio.load()
+        if all.isEmpty { out("No custom icons yet. Try: notchi icon set ~/Projects 🚀") }
+        for c in all { out("\(c.badge.isEmpty ? "·" : c.badge)  \(c.path)\(c.tint.map { "  (tint \($0))" } ?? "")") }
+    case "preview":
+        guard rest.count >= 2 else { fail("usage: notchi icon preview <emoji|image.png> <out.png> [--tint …]") }
+        let img = IconStudio.folderIcon(badge: IconStudio.badge(from: rest[0]), tint: tint())
+        let outURL = URL(fileURLWithPath: (rest[1] as NSString).expandingTildeInPath)
+        do { try img.pngData()?.write(to: outURL); out("✓ Wrote \(outURL.path)") } catch { fail("\(error)") }
+    default:
+        fail("usage: notchi icon set|restore|list|preview (see notchi help)")
+    }
+
+case "profile", "export":
     fail("`\(args[0])` is coming in a later version. Follow along: https://github.com/hardikdhingra150/Notchi")
 
 default:
