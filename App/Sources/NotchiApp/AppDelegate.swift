@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var energy = EnergyGovernor(bus: bus)
     lazy var nowPlaying = NowPlayingService(bus: bus)
     lazy var battery = BatteryMonitor(bus: bus)
+    lazy var volume = VolumeMonitor(bus: bus)
 
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
@@ -29,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         nowPlaying.start()
         battery.start()
+        volume.start()
         ipc = IPCServer(app: self)
         ipc?.start()
     }

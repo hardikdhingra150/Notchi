@@ -15,6 +15,7 @@ public enum IslandSnapshots {
             ("progress", { $0.activity = .progress(0.42, "Exporting") }),
             ("theme", { $0.activity = .theme("Neon Rain") }),
             ("battery", { $0.activity = .battery(.init(level: 0.87, isCharging: true, isPluggedIn: true)) }),
+            ("volume", { $0.activity = .volume(0.62, false) }),
             ("expanded-home", { $0.hovering = true; $0.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false) }),
             ("expanded-player", { $0.hovering = true; $0.nowPlaying = .sample }),
         ]

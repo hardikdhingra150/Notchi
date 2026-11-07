@@ -124,6 +124,8 @@ public final class NotchIslandController {
             applyEnergy(b)
         case .nowPlaying(let np):
             withAnimation(model.spring) { model.nowPlaying = np }
+        case .volume(let v, let muted):
+            model.show(.volume(v, muted), for: 1.6)
         case .battery(let b):
             let old = model.battery
             model.battery = b

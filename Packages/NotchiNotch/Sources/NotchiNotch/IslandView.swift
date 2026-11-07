@@ -129,6 +129,22 @@ struct BannerContent: View {
                 BatteryBar(level: b.level, accent: b.level < 0.2 && !b.isCharging ? .red : model.accent)
                 Text("\(Int(b.level * 100))%").font(.system(size: 14, weight: .semibold)).foregroundStyle(ink)
             }
+        case .volume(let v, let muted):
+            HStack(spacing: 12) {
+                Image(systemName: muted || v == 0 ? "speaker.slash.fill" : v < 0.34 ? "speaker.wave.1.fill" : v < 0.67 ? "speaker.wave.2.fill" : "speaker.wave.3.fill")
+                    .font(.system(size: 15, weight: .bold)).foregroundStyle(ink)
+                    .frame(width: 24)
+                    .contentTransition(.symbolEffect(.replace))
+                GeometryReader { g in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.white.opacity(0.14))
+                        Capsule().fill(muted ? dim : model.accent).frame(width: max(7, g.size.width * v))
+                    }
+                }
+                .frame(height: 7)
+                .animation(.spring(response: 0.25, dampingFraction: 0.9), value: v)
+            }
+            .accessibilityLabel(muted ? "Muted" : "Volume \(Int(v * 100)) percent")
         case nil:
             EmptyView()
         }

@@ -9,6 +9,7 @@ public enum IslandActivity: Equatable, Sendable {
     case progress(Double, String)
     case theme(String)
     case battery(BatteryState)
+    case volume(Double, Bool)
 }
 
 /// All island state lives here (no @State, so it builds without Xcode's SwiftUI macros).
@@ -55,7 +56,9 @@ public final class IslandModel {
         switch mode {
         case .closed: return CGSize(width: w, height: h)
         case .compact: return CGSize(width: w + 2 * (h + 14), height: h)
-        case .banner: return CGSize(width: max(w + 150, 380), height: h + 50)
+        case .banner:
+            if case .volume = activity { return CGSize(width: max(w + 110, 320), height: h + 40) }
+            return CGSize(width: max(w + 150, 380), height: h + 50)
         case .expanded: return CGSize(width: max(w + 300, 520), height: h + 132)
         }
     }
