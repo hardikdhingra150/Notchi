@@ -62,9 +62,21 @@ KC_ARGS=()
 DEVKC="$HOME/Library/Application Support/Notchi/DevSigning/notchi-dev.keychain-db"
 if [[ -z "${NOTCHI_SIGN_ID:-}" && -f "$DEVKC" ]]; then
   security unlock-keychain -p "$(cat "${DEVKC:h}/password")" "$DEVKC"
-  SIGN="Notchi Local Dev"
-  SIGN_LABEL="Notchi Local Dev"
-  KC_ARGS=(--keychain "$DEVKC")
+  # codesign only looks in keychains on the user's search list (--keychain alone
+  # isn't enough), so add ours while signing and put the list back on exit.
+  ORIG_KCS=("${(@f)$(security list-keychains -d user | sed -e 's/^[[:space:]]*"//' -e 's/"[[:space:]]*$//')}")
+  restore_keychains() { security list-keychains -d user -s "${ORIG_KCS[@]}"; }
+  trap restore_keychains EXIT
+  security list-keychains -d user -s "${ORIG_KCS[@]}" "$DEVKC"
+  # The certificate is self-signed and not trusted, so codesign won't match it by
+  # name; its SHA-1 fingerprint works.
+  DEV_HASH="$(security find-identity -p codesigning "$DEVKC" | awk '/"Notchi Local Dev"/ { print $2; exit }')"
+  if [[ -n "$DEV_HASH" ]]; then
+    SIGN="$DEV_HASH"
+    SIGN_LABEL="Notchi Local Dev"
+  else
+    echo "Couldn't find the Notchi Local Dev identity; signing ad hoc."
+  fi
 fi
 # Hardened runtime turns on library validation, which only accepts frameworks
 # signed by the same Apple Team ID. Ad hoc and self-signed builds have no team,
