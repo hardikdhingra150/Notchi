@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { REPO_URL } from "@/lib/site";
 import { heroPast, heroProgress } from "@/lib/store";
@@ -371,7 +372,7 @@ export default function Hero() {
               <h1 className="display">Your notch<br />comes alive</h1>
               <p className="small-caps">One free app themes your whole Mac.<br />Notch, wallpaper, dock, icons and sounds.</p>
               <div className="t1-cta">
-                <a href="#live" className="pill hot" onClick={toEnd}>Open it up <Down /></a>
+                <a href="#explore" className="pill hot" onClick={toEnd}>Open it up <Down /></a>
                 <a href={REPO_URL} className="pill" target="_blank" rel="noreferrer"><Github /> Star on GitHub</a>
               </div>
             </div>
@@ -396,7 +397,7 @@ export default function Hero() {
             <span className="eyebrow">One theme</span>
             <h2 className="display">Everything<br />follows along</h2>
             <p>Pick a theme and the notch wakes up, the wallpaper starts moving, icons retint and the dock turns to glass. All at once, in one click.</p>
-            <a href="#themes" className="pill hot sm" onClick={(e) => { e.preventDefault(); scrollTo("#themes", 2); }}>Try a theme</a>
+            <Link href="/themes" className="pill hot sm">Try a theme</Link>
           </div>
 
           <div className="hint" aria-hidden>

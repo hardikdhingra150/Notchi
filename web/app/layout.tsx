@@ -3,6 +3,11 @@ import { Fraunces, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 import "./sections.css";
+import { SiteNotch, TopBar } from "@/components/Chrome";
+import Cursor from "@/components/Cursor";
+import Footer from "@/components/Footer";
+import Shade from "@/components/Shade";
+import SmoothScroll from "@/components/SmoothScroll";
 import { SITE_URL } from "@/lib/site";
 import { THEME_KEY } from "@/lib/themes";
 
@@ -15,7 +20,7 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Notchi: the notch, with personality",
+  title: { default: "Notchi: the notch, with personality", template: "%s" },
   description,
   openGraph: { title: "Notchi: the notch, with personality", description, type: "website", url: SITE_URL },
   twitter: { card: "summary_large_image", title: "Notchi: the notch, with personality", description },
@@ -34,7 +39,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <SmoothScroll />
+        <TopBar />
+        <SiteNotch />
+        <main>
+          {children}
+          <Footer />
+        </main>
+        <div className="mat" aria-hidden />
+        <Shade />
+        <Cursor />
+      </body>
     </html>
   );
 }

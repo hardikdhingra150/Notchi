@@ -1,27 +1,17 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { PAGES } from "@/lib/pages";
 import { REPO_URL } from "@/lib/site";
 import { heroPast, heroProgress } from "@/lib/store";
 import { fmtStars, useStars } from "@/lib/useStars";
 import { Github, LogoMark, Star } from "./icons";
 import { scrollTo } from "./SmoothScroll";
 
-const LINKS = [
-  { href: "#notch", label: "Notch" },
-  { href: "#theming", label: "Themes" },
-  { href: "#wallpapers", label: "Wallpapers" },
-  { href: "#icons", label: "Icons" },
-  { href: "#terminal", label: "CLI" },
-  { href: "#install", label: "Install" },
-  { href: "#roadmap", label: "Roadmap" },
-];
-
-const go = (e: React.MouseEvent, href: string) => {
-  e.preventDefault();
-  scrollTo(href, 2);
-};
+const LINKS = PAGES.map((p) => ({ href: p.href, label: p.short }));
 
 export function TopBar() {
   const { scrollY } = useScroll();
@@ -30,16 +20,23 @@ export function TopBar() {
   const [off, setOff] = useState(false);
   useMotionValueEvent(scrollY, "change", (v) => setOff(v > 150));
   const stars = useStars();
+  const pathname = usePathname();
 
   return (
-    <motion.header className="topbar" style={{ opacity, y, pointerEvents: off ? "none" : undefined }}>
-      <a href="#top" className="logo" onClick={(e) => go(e, "#top")} aria-label="Notchi home">
-        <LogoMark /> Notchi
-      </a>
+    <motion.header className={`topbar${pathname === "/" ? "" : " on-dark"}`} style={{ opacity, y, pointerEvents: off ? "none" : undefined }}>
+      <Link href="/" className="logo" aria-label="Notchi home" onClick={() => pathname === "/" && scrollTo(0, 1.4)}>
+        <LogoMark /> <span className="logo-word">Notchi</span>
+      </Link>
       <nav className="toplinks" aria-label="Main">
-        {LINKS.slice(0, 4).map((l) => (
-          <a key={l.href} href={l.href} className="lnk" onClick={(e) => go(e, l.href)}>{l.label}</a>
-        ))}
+        {LINKS.map((l) => {
+          const on = pathname === l.href;
+          return (
+            <Link key={l.href} href={l.href} className={`lnk${on ? " on" : ""}`} aria-current={on ? "page" : undefined}>
+              {on && <motion.i layoutId="nav-dot" className="lnk-dot" transition={{ type: "spring", stiffness: 420, damping: 30 }} />}
+              {l.label}
+            </Link>
+          );
+        })}
         <a className="pill sm" href={REPO_URL} target="_blank" rel="noreferrer">
           <Github /> {stars ? <>Star · {fmtStars(stars)}</> : "Star"}
         </a>
@@ -59,26 +56,32 @@ export function SiteNotch() {
   const [blink, setBlink] = useState(false);
   const [narrow, setNarrow] = useState(false);
   const pupils = useRef<HTMLElement[]>([]);
+  const pathname = usePathname();
   const box = useRef<HTMLDivElement>(null);
 
   // hide while the hero's own (real) notch takes the top of the screen
   useEffect(() => {
-    const upd = () => setHidden(heroProgress.get() > 0.16 && heroPast.get() < 1);
+    // only the landing page has the hero; elsewhere the site notch always shows
+    if (pathname !== "/") { heroProgress.set(0); heroPast.set(1); }
+    const upd = () => setHidden(pathname === "/" && heroProgress.get() > 0.16 && heroPast.get() < 1);
+    upd();
     const a = heroProgress.on("change", upd);
     const b = heroPast.on("change", upd);
     return () => { a(); b(); };
-  }, []);
+  }, [pathname]);
 
-  // which section are we in
+  // which section are we in (re-scan on every page)
   useEffect(() => {
     const els = [...document.querySelectorAll<HTMLElement>("[data-notch]")];
+    const first = els[0]?.getAttribute("data-notch");
+    const t = window.setTimeout(() => first && setLabel(first), 0);
     const io = new IntersectionObserver(
       (es) => es.forEach((e) => e.isIntersecting && setLabel(e.target.getAttribute("data-notch") || "")),
       { rootMargin: "-45% 0px -50% 0px" },
     );
     els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
+    return () => { io.disconnect(); window.clearTimeout(t); };
+  }, [pathname]);
 
   // eyes follow the cursor, blink now and then
   useEffect(() => {
@@ -176,7 +179,7 @@ export function SiteNotch() {
             exit={{ opacity: 0, y: -6, transition: { duration: 0.12 } }}
           >
             {LINKS.map((l) => (
-              <a key={l.href} href={l.href} onClick={(e) => { e.stopPropagation(); go(e, l.href); setOpen(false); }}>{l.label}</a>
+              <Link key={l.href} href={l.href} className={pathname === l.href ? "on" : ""} onClick={(e) => { e.stopPropagation(); setOpen(false); }}>{l.label}</Link>
             ))}
             <a href={REPO_URL} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", gap: 6, alignItems: "center", color: "var(--accent)" }}>
               <Star width={13} height={13} /> Star
