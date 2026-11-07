@@ -23,7 +23,7 @@ You need macOS 14+ and Swift 6 (Xcode or the Command Line Tools).
 
 ```bash
 swift build
-swift test
+./scripts/test.sh
 ./scripts/bundle.sh   # builds dist/Notchi.app
 open dist/Notchi.app
 ```
