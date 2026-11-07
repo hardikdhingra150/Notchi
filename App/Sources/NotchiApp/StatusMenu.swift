@@ -39,6 +39,22 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         themeItem.submenu = sub
         menu.addItem(themeItem)
 
+        let wpItem = NSMenuItem(title: "Live Wallpaper", action: nil, keyEquivalent: "")
+        let wp = NSMenu()
+        wp.addItem(withTitle: "Choose Video…", action: #selector(chooseWallpaper), keyEquivalent: "").target = self
+        let off = NSMenuItem(title: "Turn Off", action: #selector(wallpaperOff), keyEquivalent: "")
+        off.target = self
+        off.isEnabled = app.wallpaper.url != nil
+        wp.addItem(off)
+        if let u = app.wallpaper.url {
+            wp.addItem(.separator())
+            let cur = NSMenuItem(title: u.lastPathComponent, action: nil, keyEquivalent: "")
+            cur.isEnabled = false
+            wp.addItem(cur)
+        }
+        wpItem.submenu = wp
+        menu.addItem(wpItem)
+
         menu.addItem(withTitle: "Test the Notch", action: #selector(testNotch), keyEquivalent: "t").target = self
         menu.addItem(.separator())
 
@@ -55,6 +71,19 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         guard let id = sender.representedObject as? String else { return }
         app.themes.apply(id: id)
     }
+
+    @objc private func chooseWallpaper() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.movie]
+        panel.message = "Choose a video for your desktop. It loops silently and pauses when it's covered."
+        NSApp.activate(ignoringOtherApps: true)
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do { try app.wallpaper.set(url) } catch {
+            let a = NSAlert(); a.messageText = "Couldn't use that video"; a.informativeText = "\(error)"; a.runModal()
+        }
+    }
+
+    @objc private func wallpaperOff() { app.wallpaper.turnOff() }
 
     @objc private func testNotch() {
         app.bus.post(.notify(message: "Hello from Notchi 👋"))

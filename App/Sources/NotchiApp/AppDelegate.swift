@@ -1,6 +1,7 @@
 import AppKit
 import NotchiCore
 import NotchiNotch
+import NotchiWallpaper
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -10,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var nowPlaying = NowPlayingService(bus: bus)
     lazy var battery = BatteryMonitor(bus: bus)
     lazy var volume = VolumeMonitor(bus: bus)
+    lazy var wallpaper = WallpaperController(bus: bus, energy: energy)
 
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
@@ -31,6 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         nowPlaying.start()
         battery.start()
         volume.start()
+        wallpaper.start()
         ipc = IPCServer(app: self)
         ipc?.start()
     }

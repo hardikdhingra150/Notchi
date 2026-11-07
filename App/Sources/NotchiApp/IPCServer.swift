@@ -33,7 +33,19 @@ final class IPCServer {
             IPC.reply(IPCReply(
                 ok: true, message: "pong", themes: app.themes.themes.map(\.id), activeTheme: app.themes.active.id,
                 version: Version.string, island: app.island.map { "\($0.model.mode)" }, nowPlaying: np,
-                hardwareNotch: app.island?.model.isHardwareNotch), to: token)
+                hardwareNotch: app.island?.model.isHardwareNotch,
+                wallpaper: app.wallpaper.url.map { "\($0.path) (\(app.wallpaper.pauseReason.map { "paused: \($0)" } ?? "playing"))" }), to: token)
+        case .wallpaper(let path, let token):
+            guard let path else {
+                app.wallpaper.turnOff()
+                return IPC.reply(IPCReply(ok: true, message: "Video wallpaper off"), to: token)
+            }
+            do {
+                try app.wallpaper.set(URL(fileURLWithPath: path))
+                IPC.reply(IPCReply(ok: true, message: "Wallpaper set to \((path as NSString).lastPathComponent)"), to: token)
+            } catch {
+                IPC.reply(IPCReply(ok: false, message: "\(error)"), to: token)
+            }
         }
     }
 }

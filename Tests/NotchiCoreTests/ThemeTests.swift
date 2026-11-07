@@ -65,7 +65,7 @@ import Testing
 
 @Suite struct IPCTests {
     @Test func commandsRoundTrip() {
-        let cmds: [IPCCommand] = [.notify(message: "Build done ✅"), .progress(value: 0.42, label: "Exporting"), .apply(theme: "paper", replyTo: nil), .apply(theme: "midnight", replyTo: "t1"), .ping(replyTo: "abc")]
+        let cmds: [IPCCommand] = [.notify(message: "Build done ✅"), .progress(value: 0.42, label: "Exporting"), .apply(theme: "paper", replyTo: nil), .apply(theme: "midnight", replyTo: "t1"), .ping(replyTo: "abc"), .wallpaper(path: "/tmp/a.mp4", replyTo: "w"), .wallpaper(path: nil, replyTo: "w")]
         for c in cmds {
             #expect(IPC.decode(IPCCommand.self, from: IPC.encode(c)) == c)
         }

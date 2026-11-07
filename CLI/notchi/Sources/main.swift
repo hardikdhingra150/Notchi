@@ -20,6 +20,8 @@ Usage:
   notchi progress <0-100> "<label>"   show progress in the notch (100 hides it)
   notchi apply <theme>               apply a theme
   notchi theme list                  list installed themes
+  notchi wallpaper set <video>       loop a video behind your desktop icons
+  notchi wallpaper off               go back to your normal wallpaper
   notchi status                      what the notch is showing right now
   notchi doctor                      check that everything is set up
   notchi --version
@@ -28,7 +30,7 @@ Examples:
   npm run build && notchi notify "Build done ✅" || notchi notify "Build failed ❌"
   notchi progress 42 "Exporting"
 
-Coming in later versions: wallpaper, icon, profile, export.
+Coming in later versions: profile, export.
 """
 
 var isAppRunning: Bool {
@@ -99,6 +101,7 @@ case "status":
     out("Island:      \(r.island ?? "?")")
     out("Theme:       \(r.activeTheme ?? "?")")
     out("Now playing: \(r.nowPlaying ?? "nothing")")
+    out("Wallpaper:   \(r.wallpaper ?? "macOS default")")
 
 case "doctor":
     var problems = 0
@@ -127,7 +130,22 @@ case "doctor":
     out(problems == 0 ? "\nAll good." : "\n\(problems) thing\(problems == 1 ? "" : "s") to look at.")
     exit(problems == 0 ? 0 : 1)
 
-case "wallpaper", "icon", "profile", "export":
+case "wallpaper":
+    requireApp()
+    switch args.dropFirst().first {
+    case "set":
+        guard args.count >= 3 else { fail("usage: notchi wallpaper set <video.mp4|mov>") }
+        let path = URL(fileURLWithPath: (args[2] as NSString).expandingTildeInPath).standardizedFileURL.path
+        guard let r = request({ .wallpaper(path: path, replyTo: $0) }, timeout: 4) else { fail("Notchi didn't answer.") }
+        if r.ok { out("✓ \(r.message)") } else { fail(r.message) }
+    case "off":
+        guard let r = request({ .wallpaper(path: nil, replyTo: $0) }) else { fail("Notchi didn't answer.") }
+        out("✓ \(r.message)")
+    default:
+        fail("usage: notchi wallpaper set <file>  |  notchi wallpaper off")
+    }
+
+case "icon", "profile", "export":
     fail("`\(args[0])` is coming in a later version. Follow along: https://github.com/hardikdhingra150/Notchi")
 
 default:
