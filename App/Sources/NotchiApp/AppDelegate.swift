@@ -17,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settings: SettingsWindowController?
     private(set) var island: NotchIslandController?
     private var ipc: IPCServer?
+    private var onboarding: OnboardingWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         themes.reload()
@@ -36,6 +37,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         wallpaper.start()
         ipc = IPCServer(app: self)
         ipc?.start()
+        if !OnboardingWindowController.isDone { showOnboarding() }
+    }
+
+    func showOnboarding() {
+        if onboarding == nil { onboarding = OnboardingWindowController(app: self) }
+        onboarding?.show(bus: bus)
     }
 
     func showSettings() {

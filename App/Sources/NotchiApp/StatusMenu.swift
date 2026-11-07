@@ -69,6 +69,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         login.target = self
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(login)
+        menu.addItem(withTitle: "Welcome Tour…", action: #selector(openTour), keyEquivalent: "").target = self
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit Notchi", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -102,6 +103,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     }
 
     @objc private func openSettings() { app.showSettings() }
+    @objc private func openTour() { app.showOnboarding() }
 
     @objc private func toggleLogin() {
         LoginItem.toggle()

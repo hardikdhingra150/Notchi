@@ -11,11 +11,13 @@ swift build -c "$CONFIG" --product notchi
 BIN="$(swift build -c "$CONFIG" --show-bin-path)"
 
 APP=dist/Notchi.app
-rm -rf "$APP" && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+rm -rf "$APP" && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Helpers"
 cp "$BIN/NotchiApp" "$APP/Contents/MacOS/Notchi"
 cp Themes/*.json "$APP/Contents/Resources/" 2>/dev/null || true
 mkdir -p "$APP/Contents/Resources/Themes" && mv "$APP"/Contents/Resources/*.json "$APP/Contents/Resources/Themes/"
 cp "$BIN/notchi" dist/notchi
+# the CLI ships inside the app too (Helpers/, since MacOS/ already has "Notchi" and the disk is case-insensitive)
+cp "$BIN/notchi" "$APP/Contents/Helpers/notchi"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -37,6 +39,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 SIGN="${NOTCHI_SIGN_ID:--}"
+codesign --force --options runtime --sign "$SIGN" "$APP/Contents/Helpers/notchi" >/dev/null 2>&1 || true
 codesign --force --deep --options runtime --sign "$SIGN" "$APP" >/dev/null 2>&1 || codesign --force --deep --sign "$SIGN" "$APP"
 codesign --force --sign "$SIGN" dist/notchi
 echo "Built $APP and dist/notchi (signed with: ${NOTCHI_SIGN_ID:-ad hoc})"
