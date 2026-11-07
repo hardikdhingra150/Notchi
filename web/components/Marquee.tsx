@@ -28,10 +28,10 @@ function Ribbon({ items, speed, tilt, tone }: { items: string[]; speed: number; 
 
   const row = [...items, ...items];
   return (
-    <div className={`ribbon ${tone}`} style={{ rotate: `${tilt}deg` }}>
+    <div className={`ribbon ${tone}`} style={{ rotate: `${tilt}deg` }} aria-hidden>
       <motion.div className="ribbon-track" style={{ x }}>
         {[0, 1, 2, 3].map((k) => (
-          <span key={k} className="ribbon-set" aria-hidden={k > 0}>
+          <span key={k} className="ribbon-set">
             {row.map((t, i) => (
               <span key={i} className="ribbon-item">{t}<i>✦</i></span>
             ))}
@@ -44,7 +44,8 @@ function Ribbon({ items, speed, tilt, tone }: { items: string[]; speed: number; 
 
 export default function Marquee() {
   return (
-    <div className="marquee" aria-label="Notchi replaces a stack of paid apps">
+    <div className="marquee">
+      <p className="sr-only">Notchi replaces NotchNook, Alcove and separate wallpaper, dock, menu bar and widget apps, for free. No accounts, no analytics, no tracking.</p>
       <Ribbon tone="hot" speed={-2.2} tilt={-3} items={["NotchNook ~$25", "Alcove $14.99", "A wallpaper app", "A dock app", "A menu bar app", "A widgets app", "Notchi: $0"]} />
       <Ribbon tone="calm" speed={1.6} tilt={2.2} items={["No accounts", "No analytics", "No tracking", "SIP stays on", "Open source", "Battery first", "Free forever"]} />
     </div>
