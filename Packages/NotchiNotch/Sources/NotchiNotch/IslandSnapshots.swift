@@ -19,6 +19,7 @@ public enum IslandSnapshots {
             ("brightness", { $0.activity = .brightness(0.75) }),
             ("expanded-home", { $0.hovering = true; $0.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false) }),
             ("expanded-player", { $0.hovering = true; $0.nowPlaying = .sample }),
+            ("expanded-video", { $0.hovering = true; $0.nowPlaying = .video }),
             ("shelf", { m in
                 m.hovering = true
                 m.battery = .init(level: 0.64, isCharging: false, isPluggedIn: false)
@@ -45,5 +46,9 @@ public enum IslandSnapshots {
 }
 
 extension NowPlaying {
-    static let sample = NowPlaying(title: "Night Drive", artist: "Notchi Radio", album: "Ink Tide", isPlaying: true, source: .music)
+    static let sample = NowPlaying(title: "Night Drive", artist: "Notchi Radio", album: "Ink Tide", isPlaying: true,
+                                   duration: 214, position: 83, positionDate: .now, source: .music)
+    static let video = NowPlaying(title: "How the notch island works", artist: "Notchi", album: "", isPlaying: true,
+                                  duration: 754, position: 312, positionDate: .now, source: .system,
+                                  appName: "Safari", bundleID: "com.apple.Safari")
 }

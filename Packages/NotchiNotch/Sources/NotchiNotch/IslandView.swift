@@ -186,21 +186,87 @@ struct PlayerContent: View {
     let np: NowPlaying
     var body: some View {
         HStack(spacing: 16) {
-            Artwork(image: model.artwork, accent: model.accent, size: 78, radius: 16)
+            ZStack(alignment: .bottomTrailing) {
+                Artwork(image: model.artwork, accent: model.accent, size: 78, radius: 16)
+                if let icon = AppIcons.icon(np.bundleID), np.source != .music || model.artwork == nil {
+                    Image(nsImage: icon).resizable().frame(width: 24, height: 24)
+                        .shadow(color: .black.opacity(0.5), radius: 3)
+                        .offset(x: 6, y: 6)
+                }
+            }
             VStack(alignment: .leading, spacing: 3) {
                 Text(np.title).font(.system(size: 16, weight: .semibold)).foregroundStyle(ink).lineLimit(1)
-                Text(np.artist).font(.system(size: 13)).foregroundStyle(dim).lineLimit(1)
+                Text(subtitle).font(.system(size: 13)).foregroundStyle(dim).lineLimit(1)
+                if let d = np.duration, d > 0 {
+                    TrackProgress(np: np, duration: d, accent: model.accent, live: model.animate)
+                        .padding(.top, 5)
+                }
                 HStack(spacing: 22) {
                     ControlButton(symbol: "backward.fill", action: model.onPrevious)
                     ControlButton(symbol: np.isPlaying ? "pause.fill" : "play.fill", size: 22, action: model.onPlayPause)
                     ControlButton(symbol: "forward.fill", action: model.onNext)
                 }
-                .padding(.top, 8)
+                .padding(.top, 4)
             }
             Spacer(minLength: 0)
             Visualizer(accent: model.accent, playing: np.isPlaying && model.animate, bars: 6, height: 40)
         }
         .frame(maxHeight: .infinity)
+    }
+
+    /// "Artist · Safari" for browsers and other apps, just the artist for Music and Spotify.
+    private var subtitle: String {
+        let showApp = np.source == .system
+        switch (np.artist.isEmpty, showApp) {
+        case (true, _): return np.appName
+        case (false, true): return "\(np.artist) · \(np.appName)"
+        case (false, false): return np.artist
+        }
+    }
+}
+
+/// Elapsed / remaining with a thin bar. Ticks once a second, only while the island is open.
+struct TrackProgress: View {
+    let np: NowPlaying
+    let duration: Double
+    let accent: Color
+    let live: Bool
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: live && np.isPlaying ? 1 : 3600)) { ctx in
+            let t = np.elapsed(at: ctx.date) ?? 0
+            HStack(spacing: 8) {
+                Text(Self.clock(t)).font(.system(size: 10.5, weight: .medium).monospacedDigit()).foregroundStyle(dim)
+                GeometryReader { g in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.white.opacity(0.14))
+                        Capsule().fill(accent).frame(width: max(4, g.size.width * min(t / duration, 1)))
+                    }
+                }
+                .frame(height: 4)
+                Text("-" + Self.clock(max(duration - t, 0))).font(.system(size: 10.5, weight: .medium).monospacedDigit()).foregroundStyle(dim)
+            }
+            .frame(maxWidth: 230)
+        }
+        .accessibilityLabel("\(Self.clock(np.elapsed() ?? 0)) of \(Self.clock(duration))")
+    }
+
+    static func clock(_ s: Double) -> String {
+        let s = Int(s.rounded(.down))
+        return s >= 3600 ? String(format: "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60) : String(format: "%d:%02d", s / 60, s % 60)
+    }
+}
+
+/// Icons of the apps that play things (Safari, Chrome, Spotify…), cached.
+@MainActor
+enum AppIcons {
+    private static var cache: [String: NSImage] = [:]
+    static func icon(_ bundleID: String?) -> NSImage? {
+        guard let id = bundleID else { return nil }
+        if let hit = cache[id] { return hit }
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) else { return nil }
+        let img = NSWorkspace.shared.icon(forFile: url.path)
+        cache[id] = img
+        return img
     }
 }
 

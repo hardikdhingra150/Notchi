@@ -13,6 +13,16 @@
 | ![Player](docs/snapshots/expanded-player.png) | ![Notify](docs/snapshots/notify.png) | ![Progress](docs/snapshots/progress.png) |
 | ![Home](docs/snapshots/expanded-home.png) | ![Battery](docs/snapshots/battery.png) | ![Compact](docs/snapshots/compact-music.png) |
 | ![Volume](docs/snapshots/volume.png) | ![Brightness](docs/snapshots/brightness.png) | ![Shelf](docs/snapshots/shelf.png) |
+| ![Video](docs/snapshots/expanded-video.png) | | |
+
+### Now playing from any app
+
+The notch shows whatever macOS shows in Control Center: a YouTube tab in Safari or Chrome,
+Music, Spotify, Podcasts, VLC, IINA and so on, with artwork (or the app's icon), a live
+progress bar and play/pause/skip. Since macOS 15.4 only Apple-signed processes can read
+this, so Notchi loads a tiny helper ([Helpers/MediaRemoteBridge](Helpers/MediaRemoteBridge))
+into `/usr/bin/perl`, the same approach other open-source notch apps use. Nothing leaves
+your Mac. If a future macOS blocks it, Notchi falls back to Music and Spotify only.
 
 ### Volume and brightness in the notch
 
