@@ -35,7 +35,7 @@ final class IPCServer {
                 version: Version.string, island: app.island.map { "\($0.model.mode)" }, nowPlaying: np,
                 hardwareNotch: app.island?.model.isHardwareNotch,
                 wallpaper: app.wallpaper.url.map { "\($0.path) (\(app.wallpaper.pauseReason.map { "paused: \($0)" } ?? "playing"))" },
-                accent: app.themes.active.accent.description), to: token)
+                accent: app.themes.active.accent.description, systemHUD: app.systemHUD.state.rawValue), to: token)
         case .wallpaper(let path, let token):
             guard let path else {
                 app.wallpaper.turnOff()

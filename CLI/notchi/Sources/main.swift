@@ -107,6 +107,7 @@ case "status":
     out("Theme:       \(r.activeTheme ?? "?")")
     out("Now playing: \(r.nowPlaying ?? "nothing")")
     out("Wallpaper:   \(r.wallpaper ?? "macOS default")")
+    out("Volume HUD:  \(r.systemHUD.map { "in the notch: \($0)" } ?? "?")")
 
 case "doctor":
     var problems = 0
@@ -122,6 +123,11 @@ case "doctor":
         if let r {
             check(true, "Themes", "\(r.themes?.count ?? 0) installed, active: \(r.activeTheme ?? "?")")
             check(true, "Island", r.hardwareNotch == true ? "on the hardware notch" : "virtual island (no notch on this screen)")
+            if let hud = r.systemHUD {
+                check(hud != "needs Accessibility access" && hud != "couldn't start", "Volume HUD",
+                      hud == "needs Accessibility access" ? "macOS indicator still shows; allow Notchi in System Settings > Privacy & Security > Accessibility"
+                      : hud == "on" ? "volume and brightness show in the notch" : hud)
+            }
         }
     }
     let info = ProcessInfo.processInfo

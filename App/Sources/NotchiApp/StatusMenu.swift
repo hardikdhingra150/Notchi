@@ -62,6 +62,17 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         restore.isEnabled = changed > 0
         menu.addItem(restore)
 
+        let hud = NSMenuItem(title: "Volume & Brightness in the Notch", action: #selector(toggleHUD), keyEquivalent: "")
+        hud.target = self
+        switch app.systemHUD.state {
+        case .active: hud.state = .on
+        case .needsPermission: hud.state = .mixed; hud.title += " (needs Accessibility)"
+        case .failed: hud.state = .mixed; hud.title += " (couldn't start)"
+        case .off: hud.state = .off
+        }
+        hud.toolTip = "Shows volume and brightness changes in the notch instead of the macOS indicator."
+        menu.addItem(hud)
+
         menu.addItem(withTitle: "Test the Notch", action: #selector(testNotch), keyEquivalent: "t").target = self
         menu.addItem(.separator())
 
@@ -103,6 +114,15 @@ final class StatusMenu: NSObject, NSMenuDelegate {
 
     @objc private func testNotch() {
         app.bus.post(.notify(message: "Hello from Notchi 👋"))
+    }
+
+    @objc private func toggleHUD() {
+        let hud = app.systemHUD
+        switch hud.state {
+        case .active: hud.setEnabled(false)
+        case .needsPermission, .failed: hud.requestPermission()
+        case .off: hud.setEnabled(true)
+        }
     }
 
     @objc private func openSettings() { app.showSettings() }

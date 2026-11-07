@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var nowPlaying = NowPlayingService(bus: bus)
     lazy var battery = BatteryMonitor(bus: bus)
     lazy var volume = VolumeMonitor(bus: bus)
+    lazy var systemHUD = SystemHUD(bus: bus, volume: volume)
     lazy var wallpaper = WallpaperController(bus: bus, energy: energy)
 
     private var statusMenu: StatusMenu?
@@ -35,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         nowPlaying.start()
         battery.start()
         volume.start()
+        systemHUD.start()
         wallpaper.start()
         ipc = IPCServer(app: self)
         ipc?.start()

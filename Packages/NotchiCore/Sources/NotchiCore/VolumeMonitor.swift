@@ -49,6 +49,51 @@ public final class VolumeMonitor {
         bus.post(.volume(level: now.0, muted: now.1))
     }
 
+    // MARK: Changing the volume (used when Notchi handles the volume keys itself)
+
+    /// False for outputs macOS can't set the volume on (some HDMI/USB devices);
+    /// those keys are left to macOS.
+    public var canSetVolume: Bool {
+        guard device != kAudioObjectUnknown else { return false }
+        var a = Self.address(kAudioHardwareServiceDeviceProperty_VirtualMainVolume)
+        var settable: DarwinBoolean = false
+        return AudioObjectIsPropertySettable(device, &a, &settable) == noErr && settable.boolValue
+    }
+
+    /// One volume key press. Turning it up unmutes, like macOS. Always posts, so the
+    /// indicator shows even when the volume is already at the top or bottom.
+    public func step(_ direction: Int, fine: Bool) {
+        guard let (v, muted) = read() else { return }
+        let next = LevelStep.next(v, direction: direction, fine: fine)
+        write(volume: next)
+        if muted && direction > 0 { write(muted: false) }
+        report()
+    }
+
+    public func toggleMute() {
+        guard let (_, muted) = read() else { return }
+        write(muted: !muted)
+        report()
+    }
+
+    private func report() {
+        guard let now = read() else { return }
+        last = now
+        bus.post(.volume(level: now.0, muted: now.1))
+    }
+
+    private func write(volume: Double) {
+        var v = Float32(volume)
+        var a = Self.address(kAudioHardwareServiceDeviceProperty_VirtualMainVolume)
+        AudioObjectSetPropertyData(device, &a, 0, nil, UInt32(MemoryLayout<Float32>.size), &v)
+    }
+
+    private func write(muted: Bool) {
+        var m = UInt32(muted ? 1 : 0)
+        var a = Self.address(kAudioDevicePropertyMute)
+        AudioObjectSetPropertyData(device, &a, 0, nil, UInt32(MemoryLayout<UInt32>.size), &m)
+    }
+
     private func read() -> (Double, Bool)? {
         var vol = Float32(0), size = UInt32(MemoryLayout<Float32>.size)
         var a = Self.address(kAudioHardwareServiceDeviceProperty_VirtualMainVolume)

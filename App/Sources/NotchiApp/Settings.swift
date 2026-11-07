@@ -7,7 +7,7 @@ final class SettingsWindowController {
     private let window: NSWindow
 
     init(app: AppDelegate) {
-        let view = SettingsView(themes: app.themes, energy: EnergyModel(governor: app.energy, bus: app.bus))
+        let view = SettingsView(themes: app.themes, hud: app.systemHUD, energy: EnergyModel(governor: app.energy, bus: app.bus))
         window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "Notchi Settings"
         window.styleMask = [.titled, .closable, .miniaturizable]
@@ -44,12 +44,22 @@ final class EnergyModel {
 
 struct SettingsView: View {
     let themes: ThemeEngine
+    let hud: SystemHUD
     @Bindable var energy: EnergyModel
 
     var body: some View {
         TabView {
             Form {
                 Toggle("Open Notchi at login", isOn: Binding(get: { LoginItem.isEnabled }, set: { _ in LoginItem.toggle() }))
+                Toggle("Show volume and brightness in the notch", isOn: Binding(
+                    get: { hud.state != .off }, set: { hud.setEnabled($0) }))
+                if hud.state == .needsPermission || hud.state == .failed {
+                    HStack {
+                        Text("Notchi needs Accessibility access to replace the macOS volume and brightness indicator.")
+                            .font(.callout).foregroundStyle(.secondary)
+                        Button("Allow…") { hud.requestPermission() }
+                    }
+                }
                 LabeledContent("Island") { Text(DisplayManager.preferredScreen.map { DisplayManager.notch(on: $0).isHardware } == true ? "Hardware notch" : "Virtual island") }
                 LabeledContent("Version") { Text(Version.string) }
                 Text("Hover the notch to open it. Use the notchi command to send messages to it.")
