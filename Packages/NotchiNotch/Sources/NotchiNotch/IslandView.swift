@@ -233,12 +233,18 @@ struct Visualizer: View {
             let t = ctx.date.timeIntervalSinceReferenceDate
             HStack(alignment: .center, spacing: 3) {
                 ForEach(0..<bars, id: \.self) { i in
-                    let v = playing ? 0.3 + 0.7 * abs(sin(t * (2.2 + Double(i % 3) * 0.6) + Double(i) * 1.3)) : 0.25
-                    Capsule().fill(accent).frame(width: 3.5, height: height * v)
+                    Capsule().fill(accent).frame(width: 3.5, height: height * level(i, t))
                 }
             }
             .frame(height: height)
         }
+    }
+
+    private func level(_ i: Int, _ t: Double) -> CGFloat {
+        guard playing else { return 0.25 }
+        let speed: Double = 2.2 + Double(i % 3) * 0.6
+        let wave: Double = abs(sin(t * speed + Double(i) * 1.3))
+        return CGFloat(0.3 + 0.7 * wave)
     }
 }
 
