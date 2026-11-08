@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "rose",
+  "name": "Ros\u00e9",
+  "author": "notchi community",
+  "version": "1.0.0",
+  "appearance": "light",
+  "accent": "#D7827E",
+  "glass": {
+    "blur": 0.7,
+    "tint": 0.25
+  },
+  "wallpaper": {
+    "type": "video",
+    "src": "petals.mp4",
+    "fps": 30
+  },
+  "icons": {
+    "pack": "default",
+    "tintFolders": true
+  },
+  "notch": {
+    "glow": "accent",
+    "idle": "pet",
+    "visualizer": true
+  },
+  "sidebar": {
+    "widgets": [
+      "nowPlaying",
+      "calendar",
+      "stats"
+    ]
+  },
+  "dock": {
+    "style": "floating-glass",
+    "magnify": 1.4
+  },
+  "menuBar": {
+    "tint": "accent",
+    "opacity": 0.4
+  },
+  "sounds": {
+    "pack": "chimes"
+  },
+  "cursor": {
+    "trail": "petal"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "terminal",
+  "name": "Terminal",
+  "author": "notchi community",
+  "version": "1.0.0",
+  "appearance": "dark",
+  "accent": "#39FF14",
+  "glass": {
+    "blur": 0.8,
+    "tint": 0.35
+  },
+  "wallpaper": {
+    "type": "video",
+    "src": "neon-rain.mp4",
+    "fps": 30
+  },
+  "icons": {
+    "pack": "default",
+    "tintFolders": true
+  },
+  "notch": {
+    "glow": "accent",
+    "idle": "rain",
+    "visualizer": true
+  },
+  "sidebar": {
+    "widgets": [
+      "nowPlaying",
+      "calendar",
+      "stats"
+    ]
+  },
+  "dock": {
+    "style": "vertical",
+    "magnify": 1.4
+  },
+  "menuBar": {
+    "tint": "accent",
+    "opacity": 0.4
+  },
+  "sounds": {
+    "pack": "low-hum"
+  },
+  "cursor": {
+    "trail": "spark"
+  }
+}

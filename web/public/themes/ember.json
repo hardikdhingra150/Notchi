@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "ember",
+  "name": "Ember",
+  "author": "notchi community",
+  "version": "1.0.0",
+  "appearance": "dark",
+  "accent": "#FF5A36",
+  "glass": {
+    "blur": 0.75,
+    "tint": 0.3
+  },
+  "wallpaper": {
+    "type": "video",
+    "src": "lava.mp4",
+    "fps": 30
+  },
+  "icons": {
+    "pack": "default",
+    "tintFolders": true
+  },
+  "notch": {
+    "glow": "accent",
+    "idle": "sparks",
+    "visualizer": true
+  },
+  "sidebar": {
+    "widgets": [
+      "nowPlaying",
+      "calendar",
+      "stats"
+    ]
+  },
+  "dock": {
+    "style": "centered-pill",
+    "magnify": 1.4
+  },
+  "menuBar": {
+    "tint": "accent",
+    "opacity": 0.4
+  },
+  "sounds": {
+    "pack": "low-hum"
+  },
+  "cursor": {
+    "trail": "spark"
+  }
+}

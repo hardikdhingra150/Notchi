@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "mono",
+  "name": "Mono",
+  "author": "notchi community",
+  "version": "1.0.0",
+  "appearance": "light",
+  "accent": "#1F1F1F",
+  "glass": {
+    "blur": 0.5,
+    "tint": 0.15
+  },
+  "wallpaper": {
+    "type": "video",
+    "src": "ink-tide.mp4",
+    "fps": 30
+  },
+  "icons": {
+    "pack": "default",
+    "tintFolders": true
+  },
+  "notch": {
+    "glow": "accent",
+    "idle": "breathing",
+    "visualizer": true
+  },
+  "sidebar": {
+    "widgets": [
+      "nowPlaying",
+      "calendar",
+      "stats"
+    ]
+  },
+  "dock": {
+    "style": "minimal",
+    "magnify": 1.4
+  },
+  "menuBar": {
+    "tint": "accent",
+    "opacity": 0.4
+  },
+  "sounds": {
+    "pack": "soft-pencil"
+  },
+  "cursor": {
+    "trail": "ring"
+  }
+}

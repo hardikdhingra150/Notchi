@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHero, PagePager } from "@/components/PageShell";
+import CommunityThemes from "@/components/CommunityThemes";
 import ThemeBuilder from "@/components/ThemeBuilder";
 import ThemeGallery from "@/components/ThemeGallery";
 import ThemeStudio from "@/components/ThemeStudio";
@@ -16,6 +17,7 @@ export default function Page() {
       <PageHero href="/themes" />
       <ThemeStudio />
       <ThemeGallery />
+      <CommunityThemes />
       <ThemeBuilder />
       <PagePager href="/themes" />
     </>
