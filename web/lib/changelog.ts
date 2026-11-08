@@ -42,6 +42,20 @@ export const RELEASES: Release[] = [
     ],
   },
   {
+    version: "Site v5",
+    label: "Every use case, shown",
+    date: "2026-11-09",
+    status: "released",
+    summary: "Every section now shows lots of real examples instead of one.",
+    changes: [
+      { kind: "new", area: "Website", text: "Wallpaper library: 14 seamless animated wallpapers to preview on a Mac and download in 1080p." },
+      { kind: "new", area: "Website", text: "12 community themes, each a real theme file paired with a wallpaper." },
+      { kind: "new", area: "Website", text: "Icon packs for developers, creators, students and home, with a copy-paste setup script." },
+      { kind: "new", area: "Website", text: "Nine notch use cases that play out the real moments: builds, YouTube, music, AI agents, AirDrop and more." },
+      { kind: "better", area: "Website", text: "14 command-line recipes grouped by builds, git and CI, AI agents and everyday tasks." },
+    ],
+  },
+  {
     version: "Site v4",
     label: "Sharper details",
     date: "2026-11-07",
