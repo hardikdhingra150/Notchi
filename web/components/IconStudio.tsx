@@ -15,7 +15,7 @@ const TINTS = [
 ];
 const FOLDERS = ["Projects", "Design", "Photos", "Music"];
 
-function Folder({ tint, emoji }: { tint: string; emoji: string }) {
+export function Folder({ tint, emoji }: { tint: string; emoji: string }) {
   const fill = tint === "accent" ? "var(--accent)" : tint;
   return (
     <svg viewBox="0 0 200 160" className="is-folder" aria-hidden>

@@ -994,3 +994,18 @@
 @media (max-width: 1000px) { .ct-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .ct-grid { grid-template-columns: 1fr; } }
 
+/* ---------- icon packs ---------- */
+.ip-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 40px; }
+.ip { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 30px; margin-top: 28px; align-items: start; }
+.ip-files { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 12px; padding: 26px 20px 30px; }
+.ip-file { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ip-file span { font: 600 12.5px/1.2 var(--f-ui); text-align: center; }
+.ip-file .is-folder { max-width: 96px; }
+.ip-side h3 { font: 400 44px/1 var(--f-display); font-variation-settings: "SOFT" 100, "opsz" 144; letter-spacing: -.04em; text-transform: uppercase; }
+.ip-side > p { margin-top: 10px; font: 500 15px/1.55 var(--f-ui); color: var(--muted); }
+.ip-script { margin-top: 18px; border-radius: 20px; background: var(--line); color: var(--paper); overflow: hidden; }
+.ip-script pre { max-height: 280px; overflow: auto; padding: 14px 16px; font: 500 12px/1.6 var(--f-mono); }
+.ip-side .is-note { margin-top: 12px; }
+@media (max-width: 1000px) { .ip { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .ip-files { grid-template-columns: repeat(2, 1fr); } }
+

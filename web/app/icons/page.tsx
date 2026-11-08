@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHero, PagePager } from "@/components/PageShell";
+import IconPacks from "@/components/IconPacks";
 import IconStudio from "@/components/IconStudio";
 
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export default function Page() {
     <>
       <PageHero href="/icons" />
       <IconStudio />
+      <IconPacks />
       <PagePager href="/icons" />
     </>
   );
