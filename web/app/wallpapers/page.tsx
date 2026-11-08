@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHero, PagePager } from "@/components/PageShell";
+import WallpaperGallery from "@/components/WallpaperGallery";
 import Wallpapers from "@/components/Wallpapers";
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export default function Page() {
   return (
     <>
       <PageHero href="/wallpapers" />
+      <WallpaperGallery />
       <Wallpapers />
       <PagePager href="/wallpapers" />
     </>
