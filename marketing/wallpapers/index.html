@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notchi wallpapers</title>
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: #000; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="shaders.js"></script>
+<script>
+// ?w=<id> picks a wallpaper; ?play animates it live; render(phase) draws one frame.
+const params = new URLSearchParams(location.search);
+const wp = WALLPAPERS.find((w) => w.id === params.get("w")) ?? WALLPAPERS[0];
+const canvas = document.getElementById("c");
+canvas.width = innerWidth * devicePixelRatio;
+canvas.height = innerHeight * devicePixelRatio;
+const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+
+function shader(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(wp.id + ": " + gl.getShaderInfoLog(s));
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, shader(gl.VERTEX_SHADER, "attribute vec2 a; void main(){ gl_Position = vec4(a, 0., 1.); }"));
+gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, wp.frag));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, "a");
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+const uR = gl.getUniformLocation(prog, "R"), uT = gl.getUniformLocation(prog, "T");
+
+window.render = (phase) => {
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.uniform2f(uR, canvas.width, canvas.height);
+  gl.uniform1f(uT, phase % 1);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  gl.finish();
+};
+window.WALLPAPER = { id: wp.id, loop: window.LOOP_SECONDS };
+render(0);
+if (params.has("play")) {
+  const t0 = performance.now();
+  const tick = (now) => { render(((now - t0) / 1000) / LOOP_SECONDS); requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+}
+</script>
+</body>
+</html>

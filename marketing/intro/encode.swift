@@ -1,5 +1,6 @@
 // Encodes numbered JPEG frames into an H.264 MP4 with AVFoundation (no ffmpeg needed).
-//   swift encode.swift <framesDir> <out.mp4> [fps=30]
+//   swift encode.swift <framesDir> <out.mp4> [fps=30] [bitrate=14000000] [width]
+// With a width, frames are scaled down (keeping the aspect ratio), e.g. for small previews.
 import AVFoundation
 import AppKit
 
@@ -8,6 +9,8 @@ guard args.count >= 3 else { print("usage: swift encode.swift <framesDir> <out.m
 let dir = URL(fileURLWithPath: args[1])
 let out = URL(fileURLWithPath: args[2])
 let fps = Int32(args.count > 3 ? Int(args[3]) ?? 30 : 30)
+let bitrate = args.count > 4 ? Int(args[4]) ?? 14_000_000 : 14_000_000
+let targetWidth = args.count > 5 ? Int(args[5]) : nil
 
 let frames = try FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
     .filter { $0.pathExtension == "jpg" }
@@ -15,7 +18,8 @@ let frames = try FileManager.default.contentsOfDirectory(at: dir, includingPrope
 guard let first = frames.first, let probe = NSImage(contentsOf: first)?.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
     print("no frames in \(dir.path)"); exit(1)
 }
-let width = probe.width, height = probe.height
+let width = targetWidth ?? probe.width
+let height = targetWidth.map { Int((Double(probe.height) * Double($0) / Double(probe.width)).rounded() / 2) * 2 } ?? probe.height
 
 try? FileManager.default.removeItem(at: out)
 let writer = try AVAssetWriter(outputURL: out, fileType: .mp4)
@@ -24,7 +28,7 @@ let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
     AVVideoWidthKey: width,
     AVVideoHeightKey: height,
     AVVideoCompressionPropertiesKey: [
-        AVVideoAverageBitRateKey: 14_000_000,          // crisp text at 1080p
+        AVVideoAverageBitRateKey: bitrate,
         AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
         AVVideoMaxKeyFrameIntervalKey: Int(fps),
         AVVideoExpectedSourceFrameRateKey: Int(fps),
@@ -57,6 +61,7 @@ for (i, url) in frames.enumerated() {
         let ctx = CGContext(data: CVPixelBufferGetBaseAddress(pb), width: width, height: height, bitsPerComponent: 8,
                             bytesPerRow: CVPixelBufferGetBytesPerRow(pb), space: space,
                             bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)!
+        ctx.interpolationQuality = .high
         ctx.draw(img, in: CGRect(x: 0, y: 0, width: width, height: height))
         CVPixelBufferUnlockBaseAddress(pb, [])
         adaptor.append(pb, withPresentationTime: CMTime(value: CMTimeValue(i), timescale: fps))
