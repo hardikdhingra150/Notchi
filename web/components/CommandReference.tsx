@@ -46,10 +46,20 @@ const GROUPS = [
 ] as const;
 
 const RECIPES = [
-  { title: "After every build", code: 'npm run build && notchi notify "Build done ✅" || notchi notify "Build failed ❌"' },
-  { title: "When a push lands", code: 'git push && notchi notify "Pushed $(git branch --show-current) 🚀"' },
-  { title: "Long exports", code: 'for i in {0..100..10}; do notchi progress $i "Exporting"; sleep 1; done' },
-  { title: "When an AI agent finishes", code: 'your-agent run task.md; notchi notify "Agent finished 🤖"' },
+  { group: "Build & test", title: "After every build", code: 'npm run build && notchi notify "Build done ✅" || notchi notify "Build failed ❌"' },
+  { group: "Build & test", title: "When tests finish", code: 'npm test && notchi notify "Tests passed 🧪" || notchi notify "Tests failed ❌"' },
+  { group: "Build & test", title: "Xcode builds", code: 'xcodebuild -scheme MyApp build | tail -1 && notchi notify "Xcode build finished 🔨"' },
+  { group: "Build & test", title: "Rust and cargo", code: 'cargo build --release && notchi notify "cargo build done 🦀"' },
+  { group: "Git & CI", title: "When a push lands", code: 'git push && notchi notify "Pushed $(git branch --show-current) 🚀"' },
+  { group: "Git & CI", title: "Wait for CI on GitHub", code: 'gh run watch --exit-status && notchi notify "CI passed ✅" || notchi notify "CI failed ❌"' },
+  { group: "Git & CI", title: "Every commit (git hook)", code: 'echo \'notchi notify "Committed: $(git log -1 --pretty=%s)"\' >> .git/hooks/post-commit && chmod +x .git/hooks/post-commit' },
+  { group: "AI agents", title: "When an AI agent finishes", code: 'your-agent run task.md; notchi notify "Agent finished 🤖"' },
+  { group: "AI agents", title: "Long-running scripts", code: 'python train.py && notchi notify "Training done 📈" || notchi notify "Training crashed 💥"' },
+  { group: "Everyday", title: "Long exports", code: 'for i in {0..100..10}; do notchi progress $i "Exporting"; sleep 1; done' },
+  { group: "Everyday", title: "Downloads", code: 'curl -LO https://example.com/big.zip && notchi notify "Download finished ⬇️"' },
+  { group: "Everyday", title: "A quick timer", code: 'sleep 1500 && notchi notify "25 minutes up ⏰"' },
+  { group: "Everyday", title: "Switch theme at night", code: '[ $(date +%H) -ge 19 ] && notchi apply midnight || notchi apply paper' },
+  { group: "Everyday", title: "Docker containers", code: 'docker compose up -d && notchi notify "Containers are up 🐳"' },
 ];
 
 function CopyBtn({ text }: { text: string }) {
@@ -103,7 +113,7 @@ export default function CommandReference() {
           </AnimatePresence>
         </div>
 
-        <h3 className="cr-h">Recipes</h3>
+        <h3 className="cr-h">Recipes <em>{RECIPES.length}</em></h3>
         <div className="cr-recipes">
           {RECIPES.map((r, i) => (
             <motion.div
@@ -114,7 +124,7 @@ export default function CommandReference() {
               viewport={{ once: true, amount: 0.4 }}
               transition={{ delay: i * 0.07, type: "spring", stiffness: 140, damping: 18 }}
             >
-              <div className="cr-recipe-top"><b>{r.title}</b><CopyBtn text={r.code} /></div>
+              <div className="cr-recipe-top"><span><em>{r.group}</em><b>{r.title}</b></span><CopyBtn text={r.code} /></div>
               <code>{r.code}</code>
             </motion.div>
           ))}
