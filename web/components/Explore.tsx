@@ -32,7 +32,11 @@ function Preview({ href }: { href: PageHref }) {
         </div>
       );
     case "/wallpapers":
-      return <div className="xp xp-wall" aria-hidden><i /><i /><i /></div>;
+      return (
+        <div className="xp xp-wall" aria-hidden>
+          <video src="/wallpapers/floating-candles-preview.mp4" poster="/wallpapers/floating-candles.jpg" autoPlay muted loop playsInline preload="metadata" />
+        </div>
+      );
     case "/icons":
       return (
         <div className="xp xp-icons" aria-hidden>

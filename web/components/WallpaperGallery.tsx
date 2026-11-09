@@ -2,13 +2,10 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WALLPAPERS, WALLPAPER_THEME_COLORS, type Wallpaper } from "@/lib/wallpapers";
+import { COLLECTIONS, WALLPAPERS, WALLPAPER_THEME_COLORS, type Collection, type Wallpaper } from "@/lib/wallpapers";
 import { Check, Copy, Down } from "./icons";
-import { setScrollLocked } from "./SmoothScroll";
+import { scrollTo, setScrollLocked } from "./SmoothScroll";
 import { SectionHead } from "./ui";
-
-const FILTERS = ["All", "Shader", "Particles", "Paper", "Midnight", "Matcha", "Sakura", "Neon Rain"] as const;
-type Filter = (typeof FILTERS)[number];
 
 /** A tile that only plays while it's on screen (or hovered), so 14 videos cost almost nothing. */
 function Tile({ w, i, onOpen }: { w: Wallpaper; i: number; onOpen: () => void }) {
@@ -25,7 +22,6 @@ function Tile({ w, i, onOpen }: { w: Wallpaper; i: number; onOpen: () => void })
 
   return (
     <motion.button
-      layout
       className="wg-tile"
       onClick={onOpen}
       initial={{ opacity: 0, y: 40, scale: 0.96 }}
@@ -117,18 +113,49 @@ function Preview({ w, onClose, onStep }: { w: Wallpaper; onClose: () => void; on
   );
 }
 
+/** A collection's banner: its best wallpaper playing full width behind a title in the collection's own style. */
+function Banner({ c, count, onOpen }: { c: Collection; count: number; onOpen: () => void }) {
+  const vid = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = vid.current;
+    if (!v) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); }, { threshold: 0.2 });
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <motion.div
+      className={`wc-banner ${c.id}`}
+      initial={{ opacity: 0, y: 50, scale: 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ type: "spring", stiffness: 90, damping: 18 }}
+    >
+      <video ref={vid} src={`/wallpapers/${c.hero}.mp4`} poster={`/wallpapers/${c.hero}.jpg`} muted loop playsInline preload="none" aria-hidden />
+      <div className="wc-shade" aria-hidden />
+      {c.id === "spellbound" && <div className="wc-sparks" aria-hidden>{Array.from({ length: 18 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 6) * 0.7}s` }} />)}</div>}
+      <div className="wc-copy">
+        <span className="wc-kicker">{c.emoji} Collection · {count} wallpapers</span>
+        <h3 className="wc-title">{c.name}</h3>
+        <p className="wc-tag">{c.tagline}</p>
+        <button className="wc-cta" onClick={onOpen}>Preview on a Mac →</button>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function WallpaperGallery() {
-  const [f, setF] = useState<Filter>("All");
   const [open, setOpen] = useState<string | null>(null);
-  const list = WALLPAPERS.filter((w) => f === "All" || w.kind === f || w.theme === f);
-  const current = list.find((w) => w.id === open) ?? WALLPAPERS.find((w) => w.id === open) ?? null;
+  const current = WALLPAPERS.find((w) => w.id === open) ?? null;
 
   const step = useCallback((d: number) => {
     setOpen((id) => {
-      const i = list.findIndex((w) => w.id === id);
+      const w = WALLPAPERS.find((x) => x.id === id);
+      const list = WALLPAPERS.filter((x) => x.collection === w?.collection);
+      const i = list.findIndex((x) => x.id === id);
       return list[(i + d + list.length) % list.length]?.id ?? id;
     });
-  }, [list]);
+  }, []);
   const close = useCallback(() => setOpen(null), []);
 
   return (
@@ -136,25 +163,31 @@ export default function WallpaperGallery() {
       <div className="wrap">
         <div className="mod-head">
           <SectionHead
-            eyebrow={`Wallpaper library · ${WALLPAPERS.length} loops`}
+            eyebrow={`Wallpaper library · ${WALLPAPERS.length} loops · ${COLLECTIONS.length} collections`}
             title={"Pick one,\nit's yours"}
-            sub="Every wallpaper here is a seamless 6-second loop made for Notchi. Preview it on a Mac, download it in 1080p and set it with one command. Free, like everything else."
+            sub="Cinematic scenes made for Notchi, from a magic-school night to a black hole. Every one is a seamless loop: preview it on a Mac, download it in 1080p and set it with one command. Free, like everything else."
           />
         </div>
-        <div className="wg-filters" role="tablist" aria-label="Filter wallpapers">
-          {FILTERS.map((x) => (
-            <button key={x} role="tab" aria-selected={f === x} className={`chip${f === x ? " on" : ""}`} onClick={() => setF(x)}>
-              {x !== "All" && x !== "Shader" && x !== "Particles" && <i className="wg-dot" style={{ background: WALLPAPER_THEME_COLORS[x] }} />}
-              {x}
+        <nav className="wg-filters" aria-label="Collections">
+          {COLLECTIONS.map((c) => (
+            <button key={c.id} className="chip" onClick={() => scrollTo(`#wc-${c.id}`, 1.4)}>
+              {c.emoji} {c.name}
             </button>
           ))}
-        </div>
-        <motion.div className="wg-grid" layout>
-          <AnimatePresence mode="popLayout">
-            {list.map((w, i) => <Tile key={w.id} w={w} i={i} onOpen={() => setOpen(w.id)} />)}
-          </AnimatePresence>
-        </motion.div>
-        <p className="wg-note">Native shader and particle wallpapers (drawn live on the GPU, in your theme&apos;s colours) arrive in v1.0. Until then these loops work with Notchi&apos;s video wallpaper today.</p>
+        </nav>
+
+        {COLLECTIONS.map((c) => {
+          const list = WALLPAPERS.filter((w) => w.collection === c.id);
+          return (
+            <div key={c.id} className="wc" id={`wc-${c.id}`} data-notch={`${c.emoji} ${c.name}`}>
+              <Banner c={c} count={list.length} onOpen={() => setOpen(c.hero)} />
+              <div className={`wg-grid${list.length <= 3 ? " few" : ""}`}>
+                {list.map((w, i) => <Tile key={w.id} w={w} i={i} onOpen={() => setOpen(w.id)} />)}
+              </div>
+            </div>
+          );
+        })}
+        <p className="wg-note">Native shader and particle wallpapers (drawn live on the GPU, in your theme&apos;s colours) arrive in v1.0. Until then these loops work with Notchi&apos;s video wallpaper today. All art is original to Notchi.</p>
       </div>
       <AnimatePresence>{current && <Preview key="pv" w={current} onClose={close} onStep={step} />}</AnimatePresence>
     </section>
