@@ -11,6 +11,7 @@
 <body>
 <canvas id="c"></canvas>
 <script src="shaders.js"></script>
+<script src="premium.js"></script>
 <script>
 // ?w=<id> picks a wallpaper; ?play animates it live; render(phase) draws one frame.
 const params = new URLSearchParams(location.search);
@@ -48,11 +49,11 @@ window.render = (phase) => {
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   gl.finish();
 };
-window.WALLPAPER = { id: wp.id, loop: window.LOOP_SECONDS };
+window.WALLPAPER = { id: wp.id, loop: wp.loop ?? window.LOOP_SECONDS };
 render(0);
 if (params.has("play")) {
   const t0 = performance.now();
-  const tick = (now) => { render(((now - t0) / 1000) / LOOP_SECONDS); requestAnimationFrame(tick); };
+  const tick = (now) => { render(((now - t0) / 1000) / (wp.loop ?? LOOP_SECONDS)); requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 }
 </script>

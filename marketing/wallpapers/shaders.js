@@ -248,4 +248,7 @@ window.WALLPAPERS = [
       col = mix(col, vec3(1.), .18 * pow(.5 + .5 * sin(v * 2.4 + a), 6.));
       gl_FragColor = vec4(col, 1.); }`,
   },
-].map((w) => ({ ...w, frag: HEAD + w.frag }));
+].map((w) => ({ collection: "Minimal", ...w, frag: HEAD + w.frag }));
+
+// shared helpers for the other collections (premium.js)
+window.WP_HEAD = HEAD;

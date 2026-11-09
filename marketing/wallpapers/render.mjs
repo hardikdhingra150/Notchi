@@ -88,4 +88,5 @@ for (const w of list) {
 }
 ws.close();
 chrome.kill();
-if (!framesOnly) rmSync(work, { recursive: true, force: true });
+await new Promise((r) => chrome.once("exit", r));
+if (!framesOnly) rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
