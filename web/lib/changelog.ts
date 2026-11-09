@@ -42,6 +42,18 @@ export const RELEASES: Release[] = [
     ],
   },
   {
+    version: "Site v7",
+    label: "Golden Hour",
+    date: "2026-11-09",
+    status: "released",
+    summary: "Eight painted landscapes made to sit behind a real desktop, and a preview that shows your icons on top.",
+    changes: [
+      { kind: "new", area: "Website", text: "Golden Hour collection: savanna sunset, palm beach, lavender fields, desert mesa, golden hills, autumn lake, misty pines and a sea of clouds." },
+      { kind: "better", area: "Website", text: "Every Golden Hour scene keeps the sky calm where macOS puts desktop icons and the bottom dark for the Dock, so labels stay readable." },
+      { kind: "new", area: "Website", text: "The Mac preview now shows folders and files on the desktop, so you can see how readable each wallpaper keeps them." },
+    ],
+  },
+  {
     version: "Site v6",
     label: "Cinematic wallpapers",
     date: "2026-11-09",
