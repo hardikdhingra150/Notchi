@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { COLLECTIONS, WALLPAPERS, WALLPAPER_THEME_COLORS, type Collection, type Wallpaper } from "@/lib/wallpapers";
 import { Check, Copy, Down } from "./icons";
+import { Folder } from "./IconStudio";
 import { scrollTo, setScrollLocked } from "./SmoothScroll";
 import { SectionHead } from "./ui";
 
@@ -90,6 +91,7 @@ function Preview({ w, onClose, onStep }: { w: Wallpaper; onClose: () => void; on
           <div className="wg-menubar"><span className="wg-apple" /><b>Finder</b><span>File</span><span>Edit</span><span>View</span><span className="wg-mb-r">9:41</span></div>
           <div className="wg-island"><i style={{ background: WALLPAPER_THEME_COLORS[w.theme] }} /><span className="m-eq">{[0, 1, 2, 3].map((k) => <i key={k} style={{ animationDelay: `${k * 0.14}s` }} />)}</span></div>
           <div className="wg-window"><span /><span /><span /></div>
+          <Desk />
           <div className="wg-dock">{["#ff6a3d", "#8f7cff", "#4f9a3a", "#e2507f", "#ffc64a"].map((c) => <i key={c} style={{ background: c }} />)}</div>
           <button className="wg-arrow l" onClick={() => onStep(-1)} aria-label="Previous wallpaper">‹</button>
           <button className="wg-arrow r" onClick={() => onStep(1)} aria-label="Next wallpaper">›</button>
@@ -110,6 +112,28 @@ function Preview({ w, onClose, onStep }: { w: Wallpaper; onClose: () => void; on
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+/** Desktop icons on the mock Mac, so you can judge how readable a wallpaper keeps them. */
+const DESK = [
+  { name: "Projects", kind: "folder", tint: "#4aa3ff" },
+  { name: "Screenshots", kind: "folder", tint: "#4aa3ff" },
+  { name: "Design", kind: "folder", tint: "#8f7cff" },
+  { name: "Notes.txt", kind: "file", tint: "" },
+  { name: "Notchi.dmg", kind: "disk", tint: "" },
+] as const;
+
+function Desk() {
+  return (
+    <div className="wg-desk" aria-hidden>
+      {DESK.map((d) => (
+        <span key={d.name} className="wg-di">
+          {d.kind === "folder" ? <Folder tint={d.tint} emoji="" /> : <i className={`wg-doc ${d.kind}`} />}
+          <b>{d.name}</b>
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -135,14 +159,20 @@ function Banner({ c, count, onOpen }: { c: Collection; count: number; onOpen: ()
       <div className="wc-shade" aria-hidden />
       {c.id === "spellbound" && <div className="wc-sparks" aria-hidden>{Array.from({ length: 18 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 6) * 0.7}s` }} />)}</div>}
       <div className="wc-copy">
-        <span className="wc-kicker">{c.emoji} Collection · {count} wallpapers</span>
-        <h3 className="wc-title">{c.name}</h3>
+        <span className="wc-kicker">{c.emoji} Collection · {count} wallpapers{c.note ? ` · ${c.note}` : ""}</span>
+        <h3 className="wc-title">{title(c.name)}</h3>
         <p className="wc-tag">{c.tagline}</p>
         <button className="wc-cta" onClick={onOpen}>Preview on a Mac →</button>
       </div>
     </motion.div>
   );
 }
+
+/** "Golden Hour" → Golden <em>Hour</em>: the last word gets the accent in collections that style it. */
+const title = (name: string) => {
+  const i = name.lastIndexOf(" ");
+  return i < 0 ? name : <>{name.slice(0, i)} <em>{name.slice(i + 1)}</em></>;
+};
 
 export default function WallpaperGallery() {
   const [open, setOpen] = useState<string | null>(null);
@@ -165,7 +195,7 @@ export default function WallpaperGallery() {
           <SectionHead
             eyebrow={`Wallpaper library · ${WALLPAPERS.length} loops · ${COLLECTIONS.length} collections`}
             title={"Pick one,\nit's yours"}
-            sub="Cinematic scenes made for Notchi, from a magic-school night to a black hole. Every one is a seamless loop: preview it on a Mac, download it in 1080p and set it with one command. Free, like everything else."
+            sub="Cinematic scenes made for Notchi, from a savanna sunset to a black hole. Every one is a seamless loop: preview it on a Mac, download it in 1080p and set it with one command. Free, like everything else."
           />
         </div>
         <nav className="wg-filters" aria-label="Collections">

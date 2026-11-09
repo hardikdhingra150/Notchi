@@ -1,7 +1,7 @@
 /** The wallpaper library. Files live in /public/wallpapers, rendered from
  *  marketing/wallpapers/shaders.js: <id>.mp4 (1080p download), <id>-preview.mp4
- *  (small tile loop) and <id>.jpg (poster). Each is a seamless 6-second loop. */
-export type CollectionId = "spellbound" | "deep-space" | "neon-city" | "cozy-nights" | "minimal";
+ *  (small tile loop) and <id>.jpg (poster). Each is a seamless 6 or 12-second loop. */
+export type CollectionId = "golden-hour" | "spellbound" | "deep-space" | "neon-city" | "cozy-nights" | "minimal";
 
 export type Wallpaper = {
   id: string;
@@ -13,6 +13,14 @@ export type Wallpaper = {
 };
 
 export const WALLPAPERS: Wallpaper[] = [
+  { id: "savanna", collection: "golden-hour", name: "Savanna Sunset", kind: "Shader", theme: "Paper", line: "Acacias and a giraffe against a low sun, grass moving in the warm wind." },
+  { id: "palm-beach", collection: "golden-hour", name: "Palm Beach", kind: "Shader", theme: "Neon Rain", line: "Palms over a glittering sea at sunset, waves washing up the sand." },
+  { id: "lavender-fields", collection: "golden-hour", name: "Lavender Fields", kind: "Shader", theme: "Sakura", line: "Rows of lavender running toward a lone tree and a setting sun." },
+  { id: "desert-mesa", collection: "golden-hour", name: "Desert Mesa", kind: "Shader", theme: "Paper", line: "Buttes and saguaros just after sunset, the first stars over the dunes." },
+  { id: "golden-hills", collection: "golden-hour", name: "Golden Hills", kind: "Shader", theme: "Paper", line: "Rolling hills, cypress lanes and a farmhouse in late golden light." },
+  { id: "autumn-lake", collection: "golden-hour", name: "Autumn Lake", kind: "Shader", theme: "Paper", line: "A red and gold forest around a mirror lake, leaves drifting down." },
+  { id: "misty-pines", collection: "golden-hour", name: "Misty Pines", kind: "Shader", theme: "Midnight", line: "Ridge after ridge of pines in morning mist, mirrored in a still lake." },
+  { id: "cloud-sea", collection: "golden-hour", name: "Above the Clouds", kind: "Shader", theme: "Midnight", line: "Snowy peaks rising out of a sea of clouds as the sun comes up." },
   { id: "floating-candles", collection: "spellbound", name: "Floating Candles", kind: "Shader", theme: "Midnight", line: "Hundreds of candles drifting under an enchanted night ceiling." },
   { id: "moonlit-castle", collection: "spellbound", name: "Moonlit Castle", kind: "Shader", theme: "Midnight", line: "Towers on a cliff, lit windows and a full moon over the lake." },
   { id: "spell-trails", collection: "spellbound", name: "Spell Trails", kind: "Particles", theme: "Midnight", line: "Ribbons of light spiralling through the dark like a duel of spells." },
@@ -45,10 +53,11 @@ export const WALLPAPER_THEME_COLORS: Record<Wallpaper["theme"], string> = {
   Paper: "#FF6A3D", Midnight: "#8F7CFF", Matcha: "#4F9A3A", Sakura: "#E2507F", "Neon Rain": "#FF3FD8", Any: "#5CE1C6",
 };
 
-export type Collection = { id: CollectionId; name: string; tagline: string; hero: string; emoji: string };
+export type Collection = { id: CollectionId; name: string; tagline: string; hero: string; emoji: string; note?: string };
 
 /** Shown in this order, each with its own themed banner. */
 export const COLLECTIONS: Collection[] = [
+  { id: "golden-hour", name: "Golden Hour", emoji: "🌅", hero: "savanna", note: "Made to sit behind your icons", tagline: "Painted landscapes at sunrise and sunset. Calm sky where your icons sit, the detail low on the horizon." },
   { id: "spellbound", name: "Spellbound", emoji: "✨", hero: "floating-candles", tagline: "Magic-school nights: floating candles, a castle on the lake and spells in the dark." },
   { id: "deep-space", name: "Deep Space", emoji: "🪐", hero: "black-hole", tagline: "A black hole, a nebula and a ringed giant, slowly turning on your desktop." },
   { id: "neon-city", name: "Neon City", emoji: "🌃", hero: "cyber-city", tagline: "Rain-soaked neon and falling code for late-night work." },

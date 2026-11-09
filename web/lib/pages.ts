@@ -15,8 +15,8 @@ export const PAGES = [
   {
     href: "/wallpapers", no: "03", title: "Wallpapers", short: "Wallpapers",
     line: "Video, shader and particle wallpapers that pause the moment you can't see them.",
-    card: "26 cinematic loops: candles, castles, black holes, neon cities.",
-    items: ["26 wallpapers", "5 collections", "Free downloads", "Battery aware"],
+    card: "34 cinematic loops: sunsets, castles, black holes, neon cities.",
+    items: ["34 wallpapers", "6 collections", "Free downloads", "Battery aware"],
   },
   {
     href: "/icons", no: "04", title: "Icons", short: "Icons",
