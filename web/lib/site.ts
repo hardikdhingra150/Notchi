@@ -6,4 +6,4 @@ export const BREW = "brew install hardikdhingra150/tap/notchi";
 export const SITE_URL = "https://notchi.vercel.app";
 
 /** Website version, shown in the footer. Keep in step with package.json and the changelog. */
-export const SITE_VERSION = "v5";
+export const SITE_VERSION = "v6";

@@ -42,6 +42,19 @@ export const RELEASES: Release[] = [
     ],
   },
   {
+    version: "Site v6",
+    label: "Cinematic wallpapers",
+    date: "2026-11-09",
+    status: "released",
+    summary: "Twelve detailed new wallpapers in four collections, each with its own banner.",
+    changes: [
+      { kind: "new", area: "Website", text: "Spellbound: floating candles under an enchanted ceiling, a moonlit castle on a lake and spell trails." },
+      { kind: "new", area: "Website", text: "Deep Space: a black hole with a lensed glowing disc, a nebula and a ringed planet with its moon." },
+      { kind: "new", area: "Website", text: "Neon City and Cozy Nights: a rainy cyberpunk skyline, code rain, a rainy window, sky lanterns, a koi pond and aurora over mountains." },
+      { kind: "better", area: "Website", text: "The wallpaper library is now organised in collections, each opening with a themed banner playing its best wallpaper." },
+    ],
+  },
+  {
     version: "Site v5",
     label: "Every use case, shown",
     date: "2026-11-09",
