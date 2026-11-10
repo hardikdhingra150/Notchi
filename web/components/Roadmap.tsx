@@ -7,8 +7,8 @@ import { SectionHead } from "./ui";
 const PHASES = [
   { v: "Phase 0", when: "Week 1", title: "Setup", items: ["Repo, licences and automated builds", "Release pipeline + Sparkle updates", "This website"], status: "done" },
   { v: "v0.1", when: "Weeks 2–6", title: "MVP", items: ["Notch island: music, battery, volume, brightness, file shelf", "Live video wallpaper and icon studio", "notchi CLI basics and onboarding"], status: "done" },
-  { v: "v0.5", when: "Weeks 7–10", title: "Themes", items: ["Theme editor and theme file sharing", "Theme reaches the wallpaper and icons", "Backup and restore of every change"], status: "now" },
-  { v: "v1.0", when: "Weeks 11–16", title: "Launch", items: ["Glass sidebar and profiles", "Shader wallpapers, virtual island", "Community gallery, accessibility pass"], status: "later" },
+  { v: "v0.5", when: "Weeks 7–10", title: "Themes", items: ["Theme editor and theme file sharing", "Theme reaches the wallpaper and icons", "Backup and restore of every change"], status: "done" },
+  { v: "v1.0", when: "Weeks 11–16", title: "Launch", items: ["Glass sidebar and profiles", "Shader wallpapers, virtual island", "Community gallery, accessibility pass"], status: "now" },
   { v: "v1.5", when: "Months 5–6", title: "Desktop", items: ["Custom dock and menu bar styling", "Cursor and sound effects", "Desktop widgets"], status: "later" },
   { v: "v2.0", when: "Months 7–9", title: "Platform", items: ["Plugin SDK (MIT)", "On-device AI theme generator", "In-app store and 8 languages"], status: "later" },
 ];
@@ -28,7 +28,7 @@ export default function Roadmap() {
   return (
     <section className="section" id="roadmap" data-notch="Roadmap">
       <div className="wrap">
-        <SectionHead center eyebrow="Built in public" title={"The road\nahead"} sub="Setup and the v0.1 MVP are done. Themes are next. Every phase ships free." />
+        <SectionHead center eyebrow="Built in public" title={"The road\nahead"} sub="Setup, the v0.1 MVP and v0.5 Themes are built. The glass sidebar is next. Every phase ships free." />
         <div className="rm" ref={ref}>
           <svg className="rm-line" viewBox="0 0 40 1000" preserveAspectRatio="none" aria-hidden>
             <path d="M20 0C38 80 2 160 20 250S38 420 20 500 2 660 20 750 38 920 20 1000" fill="none" stroke="var(--band)" strokeWidth="6" vectorEffect="non-scaling-stroke" strokeLinecap="round" />

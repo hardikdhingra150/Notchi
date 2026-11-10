@@ -4,6 +4,24 @@ export type Release = { version: string; label: string; date: string; status: "u
 /** Newest first. Keep it honest: only what is merged on main. */
 export const RELEASES: Release[] = [
   {
+    version: "v0.5",
+    label: "Themes",
+    date: "2026-11-10",
+    status: "unreleased",
+    summary: "One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
+    changes: [
+      { kind: "new", area: "App", text: "Applying a theme fades the wallpaper to the theme's video. Each of the five built-in themes now has one." },
+      { kind: "new", area: "App", text: "The notch takes its glow colour and idle style from the theme: breathing, sparks, rain, a blinking pet, or none." },
+      { kind: "new", area: "App", text: "Folders set with --tint accent are recoloured when the theme changes." },
+      { kind: "new", area: "App", text: ".notchitheme files: export a theme with its video, share it, and install it with a double-click or notchi theme install." },
+      { kind: "new", area: "App", text: "notchi theme new starts your own theme from the active one, and notchi theme validate checks a file before you share it." },
+      { kind: "new", area: "App", text: "Backup and restore: your theme, settings, installed themes, custom icons and wallpaper in one .notchibackup file." },
+      { kind: "new", area: "App", text: "Restore stock macOS in one click: wallpaper off, original icons back, macOS volume indicator back." },
+      { kind: "better", area: "App", text: "Energy: animations also pause when the Mac is hot or the battery is below 20%, and Settings shows the reason." },
+      { kind: "better", area: "App", text: "Theme packages are checked before they are unpacked, and themes can't run code." },
+    ],
+  },
+  {
     version: "v0.2",
     label: "Any app, any key",
     date: "2026-11-07",

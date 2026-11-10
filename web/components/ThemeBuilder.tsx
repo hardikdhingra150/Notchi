@@ -10,11 +10,11 @@ import { SectionHead } from "./ui";
 
 const ACCENTS = ["#FF6A3D", "#8F7CFF", "#4F9A3A", "#E2507F", "#FF3FD8", "#3FA9F5", "#F2A65A", "#14B8A6"];
 const WALLPAPERS = [
-  { v: "ink-tide.metal", label: "Ink tide" },
-  { v: "starfield.metal", label: "Starfield" },
-  { v: "leaf-drift.metal", label: "Leaf drift" },
-  { v: "petals.metal", label: "Petals" },
-  { v: "rain.metal", label: "Rain" },
+  { v: "wallpapers/ink-tide.mp4", label: "Ink tide" },
+  { v: "wallpapers/starfield.mp4", label: "Starfield" },
+  { v: "wallpapers/leaf-drift.mp4", label: "Leaf drift" },
+  { v: "wallpapers/petals.mp4", label: "Petals" },
+  { v: "wallpapers/neon-rain.mp4", label: "Rain" },
 ];
 const IDLE = ["breathing", "sparks", "rain", "pet"] as const;
 const DOCKS = ["floating-glass", "minimal", "centered-pill", "vertical"] as const;
@@ -54,7 +54,7 @@ export default function ThemeBuilder() {
   const [accent, setAccent] = useState("#3FA9F5");
   const [blur, setBlur] = useState(0.75);
   const [tint, setTint] = useState(0.25);
-  const [wallpaper, setWallpaper] = useState("starfield.metal");
+  const [wallpaper, setWallpaper] = useState("wallpapers/starfield.mp4");
   const [idle, setIdle] = useState<(typeof IDLE)[number]>("breathing");
   const [dock, setDock] = useState<(typeof DOCKS)[number]>("floating-glass");
   const [sounds, setSounds] = useState<(typeof SOUNDS)[number]>("soft-synth");
@@ -71,7 +71,7 @@ export default function ThemeBuilder() {
     appearance,
     accent: accent.toUpperCase(),
     glass: { blur, tint },
-    wallpaper: { type: "shader", src: wallpaper, fps: 30 },
+    wallpaper: { type: "video", src: wallpaper, fps: 30 },
     icons: { pack: "default", tintFolders: true },
     notch: { glow: "accent", idle, visualizer: true },
     sidebar: { widgets: ["nowPlaying", "calendar", "stats"] },
@@ -170,8 +170,8 @@ export default function ThemeBuilder() {
             </div>
             <button className="pill hot tb-dl" onClick={download}><Down /> Download {id}.json</button>
             <ol className="tb-steps">
-              <li>Put the file in <code>~/Library/Application Support/Notchi/Themes</code></li>
-              <li>Quit and reopen Notchi</li>
+              <li>Install it: <code>notchi theme install ~/Downloads/{id}.json</code></li>
+              <li>For the wallpaper, download <a href={`/${wallpaper}`} download>{wallpaper.split("/")[1]}</a> into <code>~/Library/Application Support/Notchi/Themes/{id}/wallpapers</code></li>
               <li>Pick it from the menu bar, or run <code>notchi apply {id}</code></li>
             </ol>
           </div>

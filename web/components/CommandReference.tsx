@@ -19,6 +19,18 @@ const GROUPS = [
     cmds: [
       ["notchi theme list", "List installed themes."],
       ["notchi apply neon-rain", "Apply a theme everywhere at once."],
+      ['notchi theme new my-theme "My Theme"', "Start your own theme from the active one."],
+      ["notchi theme install cool.notchitheme", "Install a theme someone shared."],
+      ["notchi theme export my-theme", "Save a theme and its video as one file."],
+      ["notchi theme validate cool.notchitheme", "Check a theme file without installing it."],
+    ],
+  },
+  {
+    name: "Backup",
+    cmds: [
+      ["notchi backup ~/Desktop/setup.notchibackup", "Your theme, settings, themes, icons and wallpaper in one file."],
+      ["notchi restore ~/Desktop/setup.notchibackup", "Bring a backup back, on this Mac or a new one."],
+      ["notchi reset", "Restore stock macOS: wallpaper, icons and volume indicator."],
     ],
   },
   {
