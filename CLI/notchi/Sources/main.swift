@@ -4,7 +4,7 @@ import NotchiIcons
 
 // notchi: talk to the Notchi app from your terminal (blueprint section 12).
 
-let version = "0.1.0"
+let version = "0.5.0"
 let args = Array(CommandLine.arguments.dropFirst())
 
 func out(_ s: String) { print(s) }
@@ -21,6 +21,15 @@ Usage:
   notchi progress <0-100> "<label>"   show progress in the notch (100 hides it)
   notchi apply <theme>               apply a theme
   notchi theme list                  list installed themes
+  notchi theme install <file>        install a .notchitheme (or a theme's .json)
+  notchi theme export <theme> [file] save a theme as a .notchitheme to share
+  notchi theme remove <theme>        remove a theme you installed
+  notchi theme new <id> ["Name"]     start your own theme from the active one
+  notchi theme validate <file>       check a theme file without installing it
+  notchi export [file]               save the active theme as a .notchitheme
+  notchi backup [file]               save your whole setup in one file
+  notchi restore <file>              bring a backup back
+  notchi reset                       restore stock macOS (wallpaper, icons, volume)
   notchi wallpaper set <video>       loop a video behind your desktop icons
   notchi wallpaper off               go back to your normal wallpaper
   notchi icon set <path> [🚀|img.png] [--tint #hex|accent]
@@ -35,7 +44,7 @@ Examples:
   npm run build && notchi notify "Build done ✅" || notchi notify "Build failed ❌"
   notchi progress 42 "Exporting"
 
-Coming in later versions: profile, export.
+Coming in later versions: profile.
 """
 
 var isAppRunning: Bool {
@@ -56,6 +65,17 @@ var isAppRunning: Bool {
         RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
     }
     return reply
+}
+
+/// A path the app can use: absolute, with ~ expanded.
+func absolute(_ path: String) -> String {
+    URL(fileURLWithPath: (path as NSString).expandingTildeInPath).standardizedFileURL.path
+}
+
+/// Print the app's answer, or stop with its error.
+func say(_ r: IPCReply?) {
+    guard let r else { fail("Notchi didn't answer.") }
+    if r.ok { out("✓ \(r.message)") } else { fail(r.message) }
 }
 
 @MainActor func requireApp() {
@@ -95,10 +115,93 @@ case "apply":
     if r.ok { out("✓ \(r.message)") } else { fail("\(r.message). Installed: \((r.themes ?? []).joined(separator: ", "))") }
 
 case "theme", "themes":
-    guard args.count < 2 || args[1] == "list" else { fail("usage: notchi theme list") }
+    switch args.count < 2 ? "list" : args[1] {
+    case "list":
+        requireApp()
+        guard let r = request({ .ping(replyTo: $0) }) else { fail("Notchi didn't answer.") }
+        for t in r.themes ?? [] { out("\(t == r.activeTheme ? "●" : " ") \(t)") }
+    case "install", "import":
+        guard args.count >= 3 else { fail("usage: notchi theme install <file.notchitheme|theme.json>") }
+        requireApp()
+        say(request({ .themeInstall(path: absolute(args[2]), replyTo: $0) }, timeout: 20))
+    case "export":
+        guard args.count >= 3 else { fail("usage: notchi theme export <theme> [file.notchitheme]") }
+        requireApp()
+        let file = absolute(args.count >= 4 ? args[3] : "\(args[2]).\(ThemePackage.fileExtension)")
+        say(request({ .themeExport(id: args[2], path: file, replyTo: $0) }, timeout: 20))
+    case "remove", "rm":
+        guard args.count >= 3 else { fail("usage: notchi theme remove <theme>") }
+        requireApp()
+        say(request({ .themeRemove(id: args[2], replyTo: $0) }))
+    case "validate":
+        guard args.count >= 3 else { fail("usage: notchi theme validate <file.notchitheme|theme.json|theme folder>") }
+        let url = URL(fileURLWithPath: absolute(args[2]))
+        do {
+            let theme: Theme
+            var missing: [String] = []
+            if [ThemePackage.fileExtension, "zip"].contains(url.pathExtension.lowercased()) {
+                // unpack it somewhere temporary, exactly as an install would
+                let tmp = try Archive.scratch("validate")
+                defer { try? FileManager.default.removeItem(at: tmp) }
+                theme = try ThemePackage.install(url, into: tmp)
+            } else {
+                let (t, base) = try ThemePackage.read(url)
+                theme = t
+                missing = ThemePackage.assetPaths(of: t).filter { ThemePackage.asset($0, base: base) == nil }
+            }
+            out("✓ \(theme.name) (\(theme.id)) by \(theme.author), version \(theme.version)")
+            for w in theme.warnings() { out("! \(w)") }
+            for m in missing { out("! \(m) isn't next to the theme file; the wallpaper won't change until it is.") }
+        } catch { fail("\(error)") }
+    case "new":
+        guard args.count >= 3 else { fail("usage: notchi theme new <id> [\"Name\"]") }
+        var t = Theme.paper
+        if isAppRunning, let hex = request({ .ping(replyTo: $0) })?.accent, let c = HexColor(hex) { t.accent = c }
+        t.id = args[2]
+        t.name = args.count >= 4 ? args.dropFirst(3).joined(separator: " ") : args[2].split(separator: "-").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined(separator: " ")
+        t.author = NSUserName()
+        t.wallpaper = nil
+        do {
+            try t.validate()
+            let dir = ThemeEngine.userThemesURL.appendingPathComponent(t.id, isDirectory: true)
+            guard !FileManager.default.fileExists(atPath: dir.path) else { fail("There's already a theme at \(dir.path)") }
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try t.encoded().write(to: dir.appendingPathComponent(ThemePackage.manifestName))
+            out("✓ Created \(dir.path)/theme.json")
+            out("  Edit it, then: notchi apply \(t.id)")
+            out("  For a wallpaper, put a video in that folder and add:  \"wallpaper\": { \"type\": \"video\", \"src\": \"my-video.mp4\" }")
+            out("  Share it: notchi theme export \(t.id)")
+        } catch { fail("\(error)") }
+    default:
+        fail("usage: notchi theme list | install <file> | export <theme> [file] | remove <theme> | new <id> | validate <file>")
+    }
+
+case "export":
     requireApp()
-    guard let r = request({ .ping(replyTo: $0) }) else { fail("Notchi didn't answer.") }
-    for t in r.themes ?? [] { out("\(t == r.activeTheme ? "●" : " ") \(t)") }
+    guard let active = request({ .ping(replyTo: $0) })?.activeTheme else { fail("Notchi didn't answer.") }
+    let file = absolute(args.count >= 2 ? args[1] : "\(active).\(ThemePackage.fileExtension)")
+    say(request({ .themeExport(id: active, path: file, replyTo: $0) }, timeout: 20))
+
+case "backup":
+    requireApp()
+    let stamp = DateFormatter()
+    stamp.dateFormat = "yyyy-MM-dd"
+    let file = absolute(args.count >= 2 ? args[1] : "Notchi-\(stamp.string(from: Date())).\(SetupBackup.fileExtension)")
+    say(request({ .backup(path: file, replyTo: $0) }, timeout: 60))
+
+case "restore":
+    guard args.count >= 2 else { fail("usage: notchi restore <file.notchibackup>") }
+    requireApp()
+    say(request({ .restore(path: absolute(args[1]), replyTo: $0) }, timeout: 60))
+
+case "reset":
+    requireApp()
+    if !args.contains("--yes") {
+        guard isatty(0) != 0 else { fail("notchi reset turns off the wallpaper, puts back original icons and the macOS volume indicator. Add --yes to go ahead.") }
+        print("Turn off the wallpaper, put back every original icon and the macOS volume indicator? A backup is saved first. [y/N] ", terminator: "")
+        guard let a = readLine(), ["y", "yes"].contains(a.lowercased()) else { out("Nothing changed."); exit(0) }
+    }
+    say(request({ .reset(replyTo: $0) }, timeout: 30))
 
 case "status":
     requireApp()
