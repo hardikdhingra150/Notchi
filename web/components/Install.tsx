@@ -44,7 +44,7 @@ function StepArt({ n }: { n: number }) {
 }
 
 const STEPS = [
-  { t: "Download", d: "Get the zip, unzip it and move Notchi.app to your Applications folder." },
+  { t: "Download", d: "Open the disk image and drag Notchi into your Applications folder." },
   { t: "Open Anyway", d: "Notchi isn't signed with a paid Apple certificate, so macOS asks once. System Settings → Privacy & Security → Open Anyway." },
   { t: "Pick a theme", d: "The notch wakes up and walks you through each module. Every permission is asked only when a feature needs it." },
 ];

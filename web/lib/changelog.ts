@@ -8,7 +8,7 @@ export const RELEASES: Release[] = [
     label: "Themes",
     date: "2026-11-10",
     status: "released",
-    summary: "Out now as a public beta (0.5.0-beta.3). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
+    summary: "Out now as a public beta (0.5.0-beta.4). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
     changes: [
       { kind: "new", area: "App", text: "Applying a theme fades the wallpaper to the theme's video. Each of the five built-in themes now has one." },
       { kind: "new", area: "App", text: "The notch takes its glow colour and idle style from the theme: breathing, sparks, rain, a blinking pet, or none." },
@@ -21,6 +21,7 @@ export const RELEASES: Release[] = [
       { kind: "better", area: "App", text: "Theme packages are checked before they are unpacked, and themes can't run code." },
       { kind: "new", area: "App", text: "Beta 3: Notchi updates itself. Every update is signed, and macOS keeps your permissions across updates." },
       { kind: "fix", area: "App", text: "Beta 3: unplugging the charger no longer says \"Battery low\" on a full battery." },
+      { kind: "better", area: "App", text: "Beta 4: Notchi downloads as a disk image. Open it and drag Notchi into Applications." },
     ],
   },
   {
