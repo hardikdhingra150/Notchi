@@ -128,8 +128,9 @@ struct IdleCanvas: View {
                 case "sparks":
                     for i in 0..<7 {
                         let seed = Double(i) * 1.7
-                        let x = size.width * (0.06 + 0.88 * frac(seed * 0.618))
-                        let y = size.height * (0.25 + 0.5 * frac(seed * 0.377))
+                        // golden-ratio steps spread the dots evenly across the width
+                        let x = size.width * (0.06 + 0.88 * frac(Double(i) * 0.618034 + 0.13))
+                        let y = size.height * (0.25 + 0.5 * frac(Double(i) * 0.377 + 0.2))
                         let a = 0.5 + 0.5 * sin(t * (1.1 + frac(seed) * 1.4) + seed * 3)
                         let r = 0.7 + 0.9 * a
                         g.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: 2 * r, height: 2 * r)), with: .color(color.opacity(0.15 + 0.8 * a)))

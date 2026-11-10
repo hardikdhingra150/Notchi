@@ -10,6 +10,10 @@ public enum IslandSnapshots {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let cases: [(String, (IslandModel) -> Void)] = [
             ("closed", { _ in }),
+            ("idle-breathing", { $0.animate = true }),
+            ("idle-sparks", { $0.animate = true; $0.idleStyle = "sparks" }),
+            ("idle-rain", { $0.animate = true; $0.idleStyle = "rain" }),
+            ("idle-pet", { $0.animate = true; $0.idleStyle = "pet" }),
             ("compact-music", { $0.nowPlaying = .sample }),
             ("notify", { $0.activity = .notify("Build done ✅") }),
             ("progress", { $0.activity = .progress(0.42, "Exporting") }),
