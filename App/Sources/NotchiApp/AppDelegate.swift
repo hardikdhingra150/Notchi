@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var volume = VolumeMonitor(bus: bus)
     lazy var systemHUD = SystemHUD(bus: bus, volume: volume)
     lazy var wallpaper = WallpaperController(bus: bus, energy: energy)
+    lazy var coordinator = ThemeCoordinator(app: self)
 
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
@@ -38,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         volume.start()
         systemHUD.start()
         wallpaper.start()
+        coordinator.start()
         ipc = IPCServer(app: self)
         ipc?.start()
         if !OnboardingWindowController.isDone { showOnboarding() }

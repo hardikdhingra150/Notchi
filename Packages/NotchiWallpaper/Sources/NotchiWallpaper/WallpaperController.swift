@@ -19,16 +19,31 @@ public final class WallpaperController {
         }
     }
 
+    /// Who picked the wallpaper: you, or the theme you applied.
+    public enum Source: String, Sendable { case user, theme }
+
     public private(set) var url: URL?
-    public var isPlaying: Bool { players.contains { $0.rate > 0 } }
+    public private(set) var source: Source = .user
+    public var isPlaying: Bool { surfaces.contains { $0.player.rate > 0 } }
     /// Why the video is paused, in plain words (nil while playing).
     public private(set) var pauseReason: String?
 
     private let bus: EventBus
     private let energy: EnergyGovernor
-    private var windows: [NSWindow] = []
-    private var players: [AVQueuePlayer] = []
-    private var loopers: [AVPlayerLooper] = []
+    /// One per screen: the window, its looping player, and the watcher that tells us when it's covered.
+    private struct Surface {
+        let window: NSWindow
+        let player: AVQueuePlayer
+        let looper: AVPlayerLooper
+        let watcher: NSObjectProtocol
+    }
+    private var surfaces: [Surface] = []
+    /// The previous wallpaper, kept for a moment while the new one fades in.
+    private var leaving: [Surface] = []
+    /// Counts fades, so a finished fade only clears what it started.
+    private var fadeID = 0
+    public static let fade: TimeInterval = 0.5
+    private static let sourceKey = "wallpaperSource"
     private var subs = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
     private var screensAsleep = false
@@ -55,40 +70,78 @@ public final class WallpaperController {
         }.store(in: &subs)
 
         if let path = UserDefaults.standard.string(forKey: Self.defaultsKey) {
-            try? set(URL(fileURLWithPath: path))
+            let saved = UserDefaults.standard.string(forKey: Self.sourceKey).flatMap(Source.init) ?? .user
+            try? set(URL(fileURLWithPath: path), source: saved)
         }
     }
 
-    public func set(_ url: URL) throws {
+    /// Show a video as the wallpaper. `animated` fades it in over the old one.
+    public func set(_ url: URL, source: Source = .user, animated: Bool = false) throws {
         guard FileManager.default.fileExists(atPath: url.path) else { throw WallpaperError.notFound(url.path) }
         let type = UTType(filenameExtension: url.pathExtension)
         guard type?.conforms(to: .movie) == true || type?.conforms(to: .video) == true else { throw WallpaperError.notAVideo(url.lastPathComponent) }
+        let same = url == self.url && !surfaces.isEmpty
         self.url = url
+        self.source = source
         UserDefaults.standard.set(url.path, forKey: Self.defaultsKey)
-        build(url)
+        UserDefaults.standard.set(source.rawValue, forKey: Self.sourceKey)
+        if !same { build(url, animated: animated) }
     }
 
-    public func turnOff() {
+    public func turnOff(animated: Bool = false) {
         url = nil
+        source = .user
         UserDefaults.standard.removeObject(forKey: Self.defaultsKey)
-        teardown()
+        UserDefaults.standard.removeObject(forKey: Self.sourceKey)
+        let old = surfaces
+        surfaces = []
+        guard animated, !energy.budget.reduceMotion, !old.isEmpty else { return remove(old) }
+        fadeOut(old)
     }
 
-    private func teardown() {
-        players.forEach { $0.pause() }
-        windows.forEach { $0.orderOut(nil) }
-        windows = []; players = []; loopers = []
+    private func remove(_ old: [Surface]) {
+        for s in old {
+            s.player.pause()
+            s.window.orderOut(nil)
+            NotificationCenter.default.removeObserver(s.watcher)
+        }
     }
 
-    private func build(_ url: URL) {
-        teardown()
+    private func fadeOut(_ old: [Surface]) {
+        remove(leaving)
+        leaving = old
+        fadeID += 1
+        let id = fadeID
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = Self.fade
+            leaving.forEach { $0.window.animator().alphaValue = 0 }
+        }, completionHandler: { [weak self] in
+            MainActor.assumeIsolated { self?.fadeEnded(id) }
+        })
+    }
+
+    private func fadeEnded(_ id: Int) {
+        guard id == fadeID else { return }
+        remove(leaving)
+        leaving = []
+    }
+
+    private func build(_ url: URL, animated: Bool = false) {
+        let fade = animated && !energy.budget.reduceMotion && !surfaces.isEmpty
+        // a fade that's still running is cut short
+        remove(leaving)
+        fadeID += 1
+        leaving = fade ? surfaces : []
+        if !fade { remove(surfaces) }
+        surfaces = []
+
         let item = AVPlayerItem(url: url)
         for screen in NSScreen.screens {
             let player = AVQueuePlayer()
             player.isMuted = true
             player.preventsDisplaySleepDuringVideoPlayback = false
             player.actionAtItemEnd = .advance
-            loopers.append(AVPlayerLooper(player: player, templateItem: item.copy() as! AVPlayerItem))
+            let looper = AVPlayerLooper(player: player, templateItem: item.copy() as! AVPlayerItem)
 
             let w = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: false, screen: screen)
             w.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)))
@@ -106,15 +159,30 @@ public final class WallpaperController {
             view.layer?.addSublayer(layer)
             w.contentView = view
             w.setFrame(screen.frame, display: false)
-            w.orderBack(nil)
+            if fade {
+                // sit on top of the old wallpaper and fade in
+                w.alphaValue = 0
+                w.orderFront(nil)
+            } else {
+                w.orderBack(nil)
+            }
 
-            observers.append(NotificationCenter.default.addObserver(forName: NSWindow.didChangeOcclusionStateNotification, object: w, queue: .main) { [weak self] _ in
+            let watcher = NotificationCenter.default.addObserver(forName: NSWindow.didChangeOcclusionStateNotification, object: w, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { self?.updatePlayback() }
-            })
-            windows.append(w)
-            players.append(player)
+            }
+            surfaces.append(Surface(window: w, player: player, looper: looper, watcher: watcher))
         }
         updatePlayback()
+        guard fade else { return }
+        fadeID += 1
+        let id = fadeID
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = Self.fade
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            surfaces.forEach { $0.window.animator().alphaValue = 1 }
+        }, completionHandler: { [weak self] in
+            MainActor.assumeIsolated { self?.fadeEnded(id) }
+        })
     }
 
     /// Battery first: only play what someone can actually see.
@@ -122,15 +190,15 @@ public final class WallpaperController {
         let budget = energy.budget
         let allowed = !screensAsleep && budget.fps > 0
         pauseReason = screensAsleep ? "display asleep" : budget.fps == 0 ? (budget.reason ?? "paused") : nil
-        if allowed, !windows.isEmpty, !windows.contains(where: { $0.occlusionState.contains(.visible) }) {
+        if allowed, !surfaces.isEmpty, !surfaces.contains(where: { $0.window.occlusionState.contains(.visible) }) {
             pauseReason = "covered by windows"
         }
-        for (w, p) in zip(windows, players) {
-            let visible = w.occlusionState.contains(.visible)
+        for s in surfaces + leaving {
+            let visible = s.window.occlusionState.contains(.visible)
             if allowed && visible {
-                if p.rate == 0 { p.play() }
-            } else if p.rate > 0 {
-                p.pause()
+                if s.player.rate == 0 { s.player.play() }
+            } else if s.player.rate > 0 {
+                s.player.pause()
             }
         }
     }

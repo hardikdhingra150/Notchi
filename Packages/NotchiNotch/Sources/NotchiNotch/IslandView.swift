@@ -17,7 +17,7 @@ public struct IslandView: View {
         ZStack(alignment: .top) {
             NotchShape(topRadius: ear, bottomRadius: mode == .expanded ? 30 : mode == .banner ? 22 : 12)
                 .fill(Color.black)
-                .shadow(color: model.activity != nil || mode == .expanded ? model.accent.opacity(0.45) : .clear, radius: 18, y: 4)
+                .shadow(color: model.activity != nil || mode == .expanded ? model.glow.opacity(0.45) : .clear, radius: 18, y: 4)
                 .overlay(alignment: .bottom) { if mode == .closed { IdleGlow(model: model) } }
 
             content(mode)
@@ -48,7 +48,9 @@ public struct IslandView: View {
             HStack {
                 Artwork(image: model.artwork, accent: model.accent, size: top - 10, radius: 6)
                 Spacer()
-                Visualizer(accent: model.accent, playing: model.animate, bars: 4, height: top - 14)
+                if model.showsVisualizer {
+                    Visualizer(accent: model.accent, playing: model.animate, bars: 4, height: top - 14)
+                }
             }
             .padding(.horizontal, 12)
             .frame(height: top)
@@ -91,18 +93,69 @@ public struct IslandView: View {
 
 // MARK: - Pieces
 
-/// A soft accent line that breathes under the notch while it's idle. Off when the energy budget says so.
+/// What the closed notch does while nothing is happening. The theme picks the style
+/// (notch.idle); it's off when the energy budget or Reduce Motion says so.
 struct IdleGlow: View {
     @Bindable var model: IslandModel
     var body: some View {
-        if model.animate && !model.reduceMotion && model.idleStyle == "breathing" {
-            Capsule()
-                .fill(model.accent)
-                .frame(width: model.notchSize.width * 0.36, height: 2.5)
-                .padding(.bottom, 4)
-                .phaseAnimator([0.15, 0.7]) { v, p in v.opacity(p) } animation: { _ in .easeInOut(duration: 2.4) }
+        if model.animate && !model.reduceMotion && model.idleStyle != "none" {
+            let w = model.notchSize.width * 0.36
+            switch model.idleStyle {
+            case "sparks", "rain", "pet":
+                IdleCanvas(style: model.idleStyle, color: model.accent)
+                    .frame(width: w, height: 8)
+                    .padding(.bottom, 2)
+            default:
+                Capsule()
+                    .fill(model.accent)
+                    .frame(width: w, height: 2.5)
+                    .padding(.bottom, 4)
+                    .phaseAnimator([0.15, 0.7]) { v, p in v.opacity(p) } animation: { _ in .easeInOut(duration: 2.4) }
+            }
         }
     }
+}
+
+/// The small drawn idle styles: twinkling sparks, falling rain, and a pet's blinking eyes.
+struct IdleCanvas: View {
+    let style: String
+    let color: Color
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 15)) { ctx in
+            let t = ctx.date.timeIntervalSinceReferenceDate
+            Canvas { g, size in
+                switch style {
+                case "sparks":
+                    for i in 0..<7 {
+                        let seed = Double(i) * 1.7
+                        let x = size.width * (0.06 + 0.88 * frac(seed * 0.618))
+                        let y = size.height * (0.25 + 0.5 * frac(seed * 0.377))
+                        let a = 0.5 + 0.5 * sin(t * (1.1 + frac(seed) * 1.4) + seed * 3)
+                        let r = 0.7 + 0.9 * a
+                        g.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: 2 * r, height: 2 * r)), with: .color(color.opacity(0.15 + 0.8 * a)))
+                    }
+                case "rain":
+                    for i in 0..<9 {
+                        let seed = Double(i) * 2.3
+                        let x = size.width * (0.04 + 0.92 * frac(seed * 0.618))
+                        let fall = frac(t * (0.7 + 0.5 * frac(seed * 0.41)) + seed)
+                        let y = size.height * (fall * 1.3 - 0.3)
+                        g.fill(Path(roundedRect: CGRect(x: x, y: y, width: 1.2, height: 3.2), cornerRadius: 0.6), with: .color(color.opacity(0.85 * (1 - fall))))
+                    }
+                default: // pet: two eyes that look around and blink
+                    let look = sin(t * 0.6) * size.width * 0.05
+                    let blink = frac(t / 3.4) > 0.94 ? 0.2 : 1.0
+                    for dx in [-5.0, 5.0] {
+                        let r = CGRect(x: size.width / 2 + dx + look - 1.8, y: size.height / 2 - 1.8 * blink, width: 3.6, height: 3.6 * blink)
+                        g.fill(Path(ellipseIn: r), with: .color(color))
+                    }
+                }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func frac(_ v: Double) -> Double { v - v.rounded(.down) }
 }
 
 struct BannerContent: View {
@@ -282,7 +335,9 @@ struct PlayerContent: View {
                 .padding(.top, 4)
             }
             Spacer(minLength: 0)
-            Visualizer(accent: model.accent, playing: np.isPlaying && model.animate, bars: 6, height: 40)
+            if model.showsVisualizer {
+                Visualizer(accent: model.accent, playing: np.isPlaying && model.animate, bars: 6, height: 40)
+            }
         }
         .frame(maxHeight: .infinity)
     }

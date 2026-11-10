@@ -38,6 +38,12 @@ public final class IslandModel {
     public var accent: Color = .orange
     public var themeName = "Paper"
     public var idleStyle = "breathing"
+    /// The theme's glow colour; nil means "same as the accent".
+    public var glowColor: Color?
+    public var glowOn = true
+    public var glow: Color { glowOn ? (glowColor ?? accent) : .clear }
+    /// Themes can turn the music bars off.
+    public var showsVisualizer = true
     public var animate = true
     public var reduceMotion = false
 

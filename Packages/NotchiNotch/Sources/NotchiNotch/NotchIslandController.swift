@@ -177,9 +177,15 @@ public final class NotchIslandController {
     }
 
     private func applyTheme(_ t: Theme) {
-        model.accent = Color(.sRGB, red: t.accent.red, green: t.accent.green, blue: t.accent.blue, opacity: 1)
+        // the colours ease from the old theme to the new one
+        withAnimation(.easeInOut(duration: model.reduceMotion ? 0 : 0.45)) {
+            model.accent = Color(.sRGB, red: t.accent.red, green: t.accent.green, blue: t.accent.blue, opacity: 1)
+            model.glowColor = t.glowColor.map { Color(.sRGB, red: $0.red, green: $0.green, blue: $0.blue, opacity: 1) }
+            model.glowOn = t.glowColor != nil
+        }
         model.themeName = t.name
-        model.idleStyle = t.notch.idle
+        model.idleStyle = Theme.Notch.idleStyles.contains(t.notch.idle) ? t.notch.idle : "breathing"
+        model.showsVisualizer = t.notch.visualizer ?? true
     }
 
     private func applyEnergy(_ b: EnergyGovernor.Budget) {

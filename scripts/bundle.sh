@@ -19,6 +19,11 @@ rm -rf "$APP" && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/
 cp "$BIN/NotchiApp" "$APP/Contents/MacOS/Notchi"
 cp Themes/*.json "$APP/Contents/Resources/" 2>/dev/null || true
 mkdir -p "$APP/Contents/Resources/Themes" && mv "$APP"/Contents/Resources/*.json "$APP/Contents/Resources/Themes/"
+# each built-in theme's video wallpaper, taken from the website's library (Themes/*.json: "src": "wallpapers/x.mp4")
+mkdir -p "$APP/Contents/Resources/Themes/wallpapers"
+for v in $(grep -ho '"src": *"wallpapers/[^"]*"' Themes/*.json | sed -E 's/.*"(wallpapers\/[^"]*)"/\1/' | sort -u); do
+  cp "web/public/$v" "$APP/Contents/Resources/Themes/$v"
+done
 cp "$BIN/notchi" dist/notchi
 # the CLI ships inside the app too (Helpers/, since MacOS/ already has "Notchi" and the disk is case-insensitive)
 cp "$BIN/notchi" "$APP/Contents/Helpers/notchi"
