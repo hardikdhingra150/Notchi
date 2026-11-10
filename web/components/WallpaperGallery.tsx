@@ -8,7 +8,7 @@ import { Folder } from "./IconStudio";
 import { scrollTo, setScrollLocked } from "./SmoothScroll";
 import { SectionHead } from "./ui";
 
-/** A tile that only plays while it's on screen (or hovered), so 14 videos cost almost nothing. */
+/** A tile that only plays while it's on screen, so a page of videos costs almost nothing. */
 function Tile({ w, i, onOpen }: { w: Wallpaper; i: number; onOpen: () => void }) {
   const vid = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -99,7 +99,7 @@ function Preview({ w, onClose, onStep }: { w: Wallpaper; onClose: () => void; on
         <div className="wg-bar">
           <div>
             <b>{w.name}</b>
-            <span>{w.line} · {w.kind} · goes with {w.theme === "Any" ? "any theme" : w.theme}</span>
+            <span>{w.line} · {w.credit ? `Footage: ${w.credit}` : w.kind} · goes with {w.theme === "Any" ? "any theme" : w.theme}</span>
           </div>
           <div className="wg-actions">
             <a className="pill hot sm" href={`/wallpapers/${w.id}.mp4`} download={`notchi-${w.id}.mp4`}><Down /> Download 1080p</a>
@@ -149,7 +149,7 @@ function Banner({ c, count, onOpen }: { c: Collection; count: number; onOpen: ()
   }, []);
   return (
     <motion.div
-      className={`wc-banner ${c.id}`}
+      className={`wc-banner ${c.look}`}
       initial={{ opacity: 0, y: 50, scale: 0.98 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, amount: 0.3 }}
@@ -157,7 +157,6 @@ function Banner({ c, count, onOpen }: { c: Collection; count: number; onOpen: ()
     >
       <video ref={vid} src={`/wallpapers/${c.hero}.mp4`} poster={`/wallpapers/${c.hero}.jpg`} muted loop playsInline preload="none" aria-hidden />
       <div className="wc-shade" aria-hidden />
-      {c.id === "spellbound" && <div className="wc-sparks" aria-hidden>{Array.from({ length: 18 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 6) * 0.7}s` }} />)}</div>}
       <div className="wc-copy">
         <span className="wc-kicker">{c.emoji} Collection · {count} wallpapers{c.note ? ` · ${c.note}` : ""}</span>
         <h3 className="wc-title">{title(c.name)}</h3>
@@ -195,7 +194,7 @@ export default function WallpaperGallery() {
           <SectionHead
             eyebrow={`Wallpaper library · ${WALLPAPERS.length} loops · ${COLLECTIONS.length} collections`}
             title={"Pick one,\nit's yours"}
-            sub="Cinematic scenes made for Notchi, from a savanna sunset to a black hole. Every one is a seamless loop: preview it on a Mac, download it in 1080p and set it with one command. Free, like everything else."
+            sub="Real footage of Earth from orbit and of America's national parks, plus a few illustrated loops. Every one loops seamlessly: preview it on a Mac, download it in 1080p and set it with one command. Free, like everything else."
           />
         </div>
         <nav className="wg-filters" aria-label="Collections">
@@ -217,7 +216,7 @@ export default function WallpaperGallery() {
             </div>
           );
         })}
-        <p className="wg-note">Native shader and particle wallpapers (drawn live on the GPU, in your theme&apos;s colours) arrive in v1.0. Until then these loops work with Notchi&apos;s video wallpaper today. All art is original to Notchi.</p>
+        <p className="wg-note">Earth from Orbit is NASA footage filmed from the International Space Station. National Parks is U.S. National Park Service footage. Both are in the public domain, and neither agency endorses Notchi. The Animated collection is original to Notchi. Any video of your own works too: <code>notchi wallpaper set ~/Movies/my-video.mp4</code>.</p>
       </div>
       <AnimatePresence>{current && <Preview key="pv" w={current} onClose={close} onStep={step} />}</AnimatePresence>
     </section>

@@ -14,9 +14,9 @@ export const PAGES = [
   },
   {
     href: "/wallpapers", no: "03", title: "Wallpapers", short: "Wallpapers",
-    line: "Video, shader and particle wallpapers that pause the moment you can't see them.",
-    card: "34 cinematic loops: sunsets, castles, black holes, neon cities.",
-    items: ["34 wallpapers", "6 collections", "Free downloads", "Battery aware"],
+    line: "Real-footage and animated wallpapers that pause the moment you can't see them.",
+    card: "Real footage of Earth from orbit and national parks, as seamless loops.",
+    items: ["29 wallpapers", "Real NASA footage", "Free downloads", "Battery aware"],
   },
   {
     href: "/icons", no: "04", title: "Icons", short: "Icons",

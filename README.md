@@ -2,7 +2,7 @@
 
 **The notch, with personality.** A free, open-source, fully animated macOS desktop suite. The notch, wallpaper, dock, icons, sidebar, menu bar, sounds and cursor all follow one theme.
 
-**Website: [notchi-plum.vercel.app](https://notchi-plum.vercel.app)**, with a live notch simulator, the theme builder and 34 free wallpapers.
+**Website: [notchi-plum.vercel.app](https://notchi-plum.vercel.app)**, with a live notch simulator, the theme builder and free wallpapers made from real NASA and National Park Service footage.
 
 > Free forever. No paywalls, no subscriptions, no ads, no tracking.
 

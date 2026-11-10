@@ -34,7 +34,7 @@ function Preview({ href }: { href: PageHref }) {
     case "/wallpapers":
       return (
         <div className="xp xp-wall" aria-hidden>
-          <video src="/wallpapers/savanna-preview.mp4" poster="/wallpapers/savanna.jpg" autoPlay muted loop playsInline preload="metadata" />
+          <video src="/wallpapers/earth-cloud-deck-preview.mp4" poster="/wallpapers/earth-cloud-deck.jpg" autoPlay muted loop playsInline preload="metadata" />
         </div>
       );
     case "/icons":

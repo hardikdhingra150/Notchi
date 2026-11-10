@@ -8,4 +8,4 @@ export const DOWNLOAD_URL = `${REPO_URL}/releases/download/v${APP_VERSION}/Notch
 export const SITE_URL = "https://notchi-plum.vercel.app";
 
 /** Website version, shown in the footer. Keep in step with package.json and the changelog. */
-export const SITE_VERSION = "v7";
+export const SITE_VERSION = "v8";

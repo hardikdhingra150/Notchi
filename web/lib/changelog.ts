@@ -63,6 +63,20 @@ export const RELEASES: Release[] = [
     ],
   },
   {
+    version: "Site v8",
+    label: "Real footage",
+    date: "2026-11-11",
+    status: "released",
+    summary: "The wallpaper library is now built on real video: Earth filmed from the space station and scenes from America's national parks.",
+    changes: [
+      { kind: "new", area: "Website", text: "Earth from Orbit: 12 wallpapers cut from NASA footage filmed on the International Space Station." },
+      { kind: "new", area: "Website", text: "National Parks: waterfalls, cherry blossom and winter dunes from U.S. National Park Service footage." },
+      { kind: "better", area: "Website", text: "Every real-footage wallpaper shows who filmed it. All of it is in the public domain." },
+      { kind: "better", area: "Website", text: "The illustrated loops are now one small Animated collection, including the five that come with the built-in themes." },
+      { kind: "new", area: "Website", text: "A Download for Mac button in the hero, pointing at the latest build." },
+    ],
+  },
+  {
     version: "Site v7",
     label: "Golden Hour",
     date: "2026-11-09",
