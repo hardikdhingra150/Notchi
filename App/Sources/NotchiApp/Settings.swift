@@ -29,6 +29,9 @@ final class EnergyModel {
     var batteryFPS: Int {
         didSet { governor.batteryFPS = batteryFPS }
     }
+    var pauseWhenLow: Bool {
+        didSet { governor.rules.pauseWhenLow = pauseWhenLow }
+    }
     private let governor: EnergyGovernor
     @ObservationIgnored private var sub: Any?
 
@@ -36,6 +39,7 @@ final class EnergyModel {
         self.governor = governor
         budget = governor.budget
         batteryFPS = governor.batteryFPS
+        pauseWhenLow = governor.rules.pauseWhenLow
         sub = bus.events.sink { [weak self] e in
             if case .energy(let b) = e { MainActor.assumeIsolated { self?.budget = b } }
         }
@@ -87,13 +91,26 @@ struct SettingsView: View {
             .tabItem { Label("Themes", systemImage: "paintpalette") }
 
             Form {
-                LabeledContent("Animation budget") { Text(energy.budget.fps == 0 ? "Paused" : "\(energy.budget.fps) fps") }
-                LabeledContent("Power") { Text(energy.budget.onBattery ? "On battery" : "Plugged in") }
-                LabeledContent("Low Power Mode") { Text(energy.budget.lowPower ? "On, animations paused" : "Off") }
-                LabeledContent("Reduce Motion") { Text(energy.budget.reduceMotion ? "On, calm animations" : "Off") }
-                Picker("On battery", selection: $energy.batteryFPS) {
-                    Text("Pause animations").tag(0)
-                    Text("15 fps").tag(15)
+                Section {
+                    LabeledContent("Animations right now") {
+                        Text(energy.budget.fps == 0 ? "Paused" : "\(energy.budget.fps) fps")
+                            .foregroundStyle(energy.budget.fps == 0 ? .orange : .primary)
+                    }
+                    if let why = energy.budget.reason {
+                        LabeledContent("Because") { Text(why) }
+                    }
+                    LabeledContent("Power") { Text(energy.budget.onBattery ? "On battery" : "Plugged in") }
+                    LabeledContent("Reduce Motion") { Text(energy.budget.reduceMotion ? "On, calm animations" : "Off") }
+                }
+                Section {
+                    Picker("On battery", selection: $energy.batteryFPS) {
+                        Text("Pause animations").tag(0)
+                        Text("15 fps").tag(15)
+                        Text("Full speed (30 fps)").tag(30)
+                    }
+                    Toggle("Pause when the battery is below 20%", isOn: $energy.pauseWhenLow)
+                } footer: {
+                    Text("Notchi always pauses in Low Power Mode, when your Mac is hot, and when the wallpaper is covered or the display is asleep.")
                 }
             }
             .formStyle(.grouped)

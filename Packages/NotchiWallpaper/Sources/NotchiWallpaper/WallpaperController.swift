@@ -121,7 +121,7 @@ public final class WallpaperController {
     private func updatePlayback() {
         let budget = energy.budget
         let allowed = !screensAsleep && budget.fps > 0
-        pauseReason = screensAsleep ? "display asleep" : budget.lowPower ? "Low Power Mode" : budget.fps == 0 ? "on battery" : nil
+        pauseReason = screensAsleep ? "display asleep" : budget.fps == 0 ? (budget.reason ?? "paused") : nil
         if allowed, !windows.isEmpty, !windows.contains(where: { $0.occlusionState.contains(.visible) }) {
             pauseReason = "covered by windows"
         }
