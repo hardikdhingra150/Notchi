@@ -11,8 +11,8 @@
     "tint": 0.3
   },
   "wallpaper": {
-    "type": "shader",
-    "src": "starfield.metal",
+    "type": "video",
+    "src": "wallpapers/starfield.mp4",
     "fps": 30
   },
   "icons": {

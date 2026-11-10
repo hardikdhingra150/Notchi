@@ -11,8 +11,8 @@
     "tint": 0.2
   },
   "wallpaper": {
-    "type": "shader",
-    "src": "ink-tide.metal",
+    "type": "video",
+    "src": "wallpapers/ink-tide.mp4",
     "fps": 30
   },
   "icons": {

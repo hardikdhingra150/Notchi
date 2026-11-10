@@ -11,8 +11,8 @@
     "tint": 0.2
   },
   "wallpaper": {
-    "type": "shader",
-    "src": "leaf-drift.metal",
+    "type": "video",
+    "src": "wallpapers/leaf-drift.mp4",
     "fps": 30
   },
   "icons": {

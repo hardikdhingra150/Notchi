@@ -36,9 +36,13 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         public var tintFolders: Bool?
     }
     public struct Notch: Codable, Equatable, Sendable {
+        /// "accent", "none" or a hex colour
         public var glow: String
+        /// what the closed notch does when nothing is happening (see `idleStyles`)
         public var idle: String
         public var visualizer: Bool?
+
+        public static let idleStyles = ["breathing", "sparks", "rain", "pet", "none"]
     }
     public struct Sidebar: Codable, Equatable, Sendable { public var widgets: [String] }
     public struct Dock: Codable, Equatable, Sendable {
@@ -59,7 +63,7 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         schema: 1, id: "paper", name: "Paper", author: "notchi", version: "1.0.0",
         appearance: .light, accent: HexColor("#FF6A3D")!,
         glass: .init(blur: 0.6, tint: 0.2),
-        wallpaper: .init(type: .shader, src: "ink-tide.metal", fps: 30),
+        wallpaper: .init(type: .video, src: "wallpapers/ink-tide.mp4", fps: 30),
         icons: .init(pack: "default", tintFolders: true),
         notch: .init(glow: "accent", idle: "breathing", visualizer: true),
         sidebar: .init(widgets: ["nowPlaying", "calendar", "stats"]),
@@ -74,9 +78,15 @@ public enum ThemeError: Error, Equatable, CustomStringConvertible {
     case unsupportedSchema(Int)
     case invalidID(String)
     case outOfRange(String)
+    case empty(String)
+    case badPath(String)
+    case badValue(String)
 
     public var description: String {
         switch self {
+        case .empty(let field): "\(field) can't be empty."
+        case .badPath(let p): "\"\(p)\" must be a path inside the theme's own folder (no \"..\" and no leading \"/\")."
+        case .badValue(let what): what
         case .unsupportedSchema(let s): "Unsupported theme schema \(s). This version of Notchi reads schema \(Theme.currentSchema)."
         case .invalidID(let id): "Theme id \"\(id)\" must be lowercase letters, numbers and dashes."
         case .outOfRange(let field): "\(field) must be between 0 and 1."
@@ -98,6 +108,49 @@ extension Theme {
         guard (0...1).contains(glass.blur) else { throw ThemeError.outOfRange("glass.blur") }
         guard (0...1).contains(glass.tint) else { throw ThemeError.outOfRange("glass.tint") }
         if let m = menuBar, !(0...1).contains(m.opacity) { throw ThemeError.outOfRange("menuBar.opacity") }
+        guard !name.trimmingCharacters(in: .whitespaces).isEmpty else { throw ThemeError.empty("name") }
+        guard id.count <= 64 else { throw ThemeError.invalidID(id) }
+        if let w = wallpaper {
+            guard Theme.isSafeRelativePath(w.src) else { throw ThemeError.badPath(w.src) }
+            if let fps = w.fps, !(1...60).contains(fps) { throw ThemeError.badValue("wallpaper.fps must be between 1 and 60.") }
+        }
+        guard notch.glow == "accent" || notch.glow == "none" || HexColor(notch.glow) != nil else {
+            throw ThemeError.badValue("notch.glow must be \"accent\", \"none\" or a colour like #FF6A3D.")
+        }
+    }
+
+    /// Things that still load but won't do anything in this version, for `notchi theme validate`.
+    public func warnings() -> [String] {
+        var out: [String] = []
+        if !Notch.idleStyles.contains(notch.idle) {
+            out.append("notch.idle \"\(notch.idle)\" isn't known; the notch will breathe. Known: \(Notch.idleStyles.joined(separator: ", ")).")
+        }
+        if let w = wallpaper, w.type != .video {
+            out.append("wallpaper.type \"\(w.type.rawValue)\" arrives in a later version; only \"video\" changes the wallpaper today.")
+        }
+        return out
+    }
+
+    /// The colour the notch glows in, or nil for no glow.
+    public var glowColor: HexColor? {
+        switch notch.glow {
+        case "accent": accent
+        case "none": nil
+        default: HexColor(notch.glow)
+        }
+    }
+
+    /// Asset paths are relative to the theme's folder and may not leave it.
+    public static func isSafeRelativePath(_ path: String) -> Bool {
+        guard !path.isEmpty, !path.hasPrefix("/"), !path.hasPrefix("~"), !path.contains("\\") else { return false }
+        return !path.split(separator: "/", omittingEmptySubsequences: false).contains { $0 == ".." || $0.isEmpty }
+    }
+
+    /// The theme as pretty JSON, the way theme files are written.
+    public func encoded() throws -> Data {
+        let enc = JSONEncoder()
+        enc.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        return try enc.encode(self)
     }
 }
 

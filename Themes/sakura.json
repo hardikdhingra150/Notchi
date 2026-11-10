@@ -11,8 +11,8 @@
     "tint": 0.25
   },
   "wallpaper": {
-    "type": "shader",
-    "src": "petals.metal",
+    "type": "video",
+    "src": "wallpapers/petals.mp4",
     "fps": 30
   },
   "icons": {
