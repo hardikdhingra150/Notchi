@@ -2,6 +2,8 @@
 
 **The notch, with personality.** A free, open-source, fully animated macOS desktop suite. The notch, wallpaper, dock, icons, sidebar, menu bar, sounds and cursor all follow one theme.
 
+**Website: [notchi-plum.vercel.app](https://notchi-plum.vercel.app)**, with a live notch simulator, the theme builder and 34 free wallpapers.
+
 > Free forever. No paywalls, no subscriptions, no ads, no tracking.
 
 > Not affiliated with the other open-source project named "notchi" (the Claude Code notch mascot). Notchi here is the whole-desktop theming suite.
@@ -89,6 +91,8 @@ cd web
 npm install
 npm run dev
 ```
+
+Every push to `main` that changes `web/` deploys to production on Vercel (project root: `web`). Pull requests get a preview link.
 
 ## Licence
 
