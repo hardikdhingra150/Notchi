@@ -34,6 +34,25 @@ import Testing
         #expect(studio.load().isEmpty)
     }
 
+    @Test func foldersThatFollowTheAccentAreRecoloured() throws {
+        let follows = dir.appendingPathComponent("Projects").path
+        let fixed = dir.appendingPathComponent("Fixed").path
+        try FileManager.default.createDirectory(atPath: fixed, withIntermediateDirectories: true)
+        try studio.set(follows, badge: .emoji("🚀"), tint: HexColor("#FF6A3D"), followsAccent: true)
+        try studio.set(fixed, badge: .none, tint: HexColor("#FF6A3D"))
+
+        #expect(studio.retint(to: HexColor("#8F7CFF")!) == 1)
+        let after = Dictionary(uniqueKeysWithValues: studio.load().map { ($0.path, $0) })
+        #expect(after[follows]?.tint == "#8F7CFF")
+        #expect(after[follows]?.badge == "🚀")
+        #expect(after[follows]?.followsAccent == true)
+        #expect(after[fixed]?.tint == "#FF6A3D")
+        // same colour again: nothing to do
+        #expect(studio.retint(to: HexColor("#8F7CFF")!) == 0)
+        #expect(studio.reapplyAll() == 2)
+        _ = studio.restoreAll()
+    }
+
     @Test func missingPathThrows() {
         #expect(throws: IconStudio.IconError.self) { try studio.set(dir.appendingPathComponent("nope").path, badge: .emoji("x"), tint: nil) }
     }

@@ -18,6 +18,10 @@ public struct IconStudio {
         public var badge: String
         public var tint: String?
         public var date: Date
+        /// Set with `--tint accent`: the folder is recoloured whenever the theme changes.
+        public var followsAccent: Bool?
+        /// The picture used as the badge, so the icon can be drawn again later.
+        public var image: String?
     }
 
     public enum IconError: Error, CustomStringConvertible {
@@ -87,7 +91,7 @@ public struct IconStudio {
     // MARK: Changing icons
 
     @discardableResult
-    public func set(_ path: String, badge: Badge, tint: HexColor?) throws -> NSImage {
+    public func set(_ path: String, badge: Badge, tint: HexColor?, followsAccent: Bool = false) throws -> NSImage {
         let path = (path as NSString).expandingTildeInPath
         var isDir: ObjCBool = false
         guard FileManager.default.fileExists(atPath: path, isDirectory: &isDir) else { throw IconError.notFound(path) }
@@ -108,9 +112,37 @@ public struct IconStudio {
         case .image(let u): u.lastPathComponent
         case .none: ""
         }
-        all.append(Change(path: path, badge: label, tint: tint?.description, date: Date()))
+        var imagePath: String?
+        if case .image(let u) = badge { imagePath = u.path }
+        all.append(Change(path: path, badge: label, tint: tint?.description, date: Date(),
+                          followsAccent: followsAccent && tint != nil ? true : nil, image: imagePath))
         save(all)
         return image
+    }
+
+    private static func badge(of c: Change) -> Badge {
+        if let p = c.image { return .image(URL(fileURLWithPath: p)) }
+        return c.badge.isEmpty ? .none : .emoji(c.badge)
+    }
+
+    /// Recolour every icon that follows the theme's accent. Returns how many changed.
+    @discardableResult
+    public func retint(to accent: HexColor) -> Int {
+        var n = 0
+        for c in load() where c.followsAccent == true && c.tint != accent.description {
+            if (try? set(c.path, badge: Self.badge(of: c), tint: accent, followsAccent: true)) != nil { n += 1 }
+        }
+        return n
+    }
+
+    /// Put every icon in the ledger back on its file (after restoring a backup). Returns how many were set.
+    @discardableResult
+    public func reapplyAll() -> Int {
+        var n = 0
+        for c in load() {
+            if (try? set(c.path, badge: Self.badge(of: c), tint: c.tint.flatMap(HexColor.init), followsAccent: c.followsAccent == true)) != nil { n += 1 }
+        }
+        return n
     }
 
     /// Put back the original icon.

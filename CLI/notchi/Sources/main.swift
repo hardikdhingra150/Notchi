@@ -180,7 +180,8 @@ case "icon":
         guard rest.count >= 1 else { fail("usage: notchi icon set <path> [emoji|image.png] [--tint #hex|accent]") }
         let badge = rest.count >= 2 ? IconStudio.badge(from: rest[1]) : .none
         do {
-            try studio.set(rest[0], badge: badge, tint: tint())
+            let follows = args.firstIndex(of: "--tint").map { $0 + 1 < args.count && args[$0 + 1] == "accent" } ?? false
+            try studio.set(rest[0], badge: badge, tint: tint(), followsAccent: follows)
             out("✓ New icon on \((rest[0] as NSString).lastPathComponent). Undo: notchi icon restore \(rest[0])")
         } catch { fail("\(error)") }
     case "restore":
