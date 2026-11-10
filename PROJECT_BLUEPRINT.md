@@ -321,7 +321,8 @@ notchi/
   "cursor": { "trail": "spark" }
 }
 ```
-A `.notchitheme` file is a zip of this JSON plus its assets (videos, shaders, icons, sounds).
+A `.notchitheme` file is a zip of this JSON (as `theme.json`) plus its assets (videos, shaders, icons, sounds).
+As of v0.5 the notch, video wallpapers (`"type": "video"`) and accent-tinted folders follow the theme; the full field guide is in `Themes/README.md`.
 
 ---
 

@@ -49,6 +49,42 @@ macOS has no public brightness API. If it's ever missing, the keys go back to ma
 
 Regenerate with `dist/Notchi.app/Contents/MacOS/Notchi --snapshot docs/snapshots`.
 
+## Themes (v0.5)
+
+Pick a theme and the desktop changes together: the wallpaper fades to the theme's video,
+the notch takes its colour, glow and idle animation, and folders you tinted with the accent
+are recoloured. Five themes are built in: Paper, Midnight, Neon Rain, Sakura and Matcha.
+
+```bash
+notchi apply midnight                    # switch theme
+notchi theme new my-theme "My Theme"     # start your own from the active one
+notchi theme export my-theme             # my-theme.notchitheme, ready to share
+notchi theme install cool.notchitheme    # or double-click the file
+```
+
+A theme is a folder with a `theme.json` and its video; a `.notchitheme` is that folder
+zipped. The format is in [Themes/README.md](Themes/README.md). Themes are data only and
+can't run code. If you'd rather keep your own wallpaper, turn off *Themes change my
+wallpaper* in Settings → Themes.
+
+### Backup, restore and going back to stock macOS
+
+```bash
+notchi backup ~/Desktop/setup.notchibackup   # theme, settings, installed themes, icons, wallpaper
+notchi restore ~/Desktop/setup.notchibackup  # on this Mac or a new one
+notchi reset                                 # wallpaper off, original icons back, macOS volume indicator back
+```
+
+The same three are in the menu bar under *Backup*. Before a restore or a reset Notchi saves
+your current setup in `~/Library/Application Support/Notchi/Backups` (it keeps the newest five).
+
+### Energy
+
+Animations run at 30 fps when plugged in and at your choice on battery (paused, 15 or 30 fps).
+They always pause in Low Power Mode, when the Mac is hot, when the battery is below 20%
+(you can turn that one off), and when the wallpaper is covered or the display is asleep.
+Settings → Energy shows the current speed and the reason.
+
 ## Repo layout
 
 | Folder | What it is |
@@ -78,6 +114,8 @@ notchi notify "Build done ✅"          # show a message in the notch
 notchi progress 42 "Exporting"         # show progress (100 hides it)
 notchi apply midnight                  # apply a theme
 notchi theme list                      # list themes
+notchi theme install cool.notchitheme  # install a theme
+notchi backup                          # save your whole setup in one file
 notchi status                          # what the notch is showing
 notchi doctor                          # check setup and conflicts
 ```
