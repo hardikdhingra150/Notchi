@@ -136,4 +136,7 @@ fi
 codesign --force "${KC_ARGS[@]}" "${RUNTIME[@]}" --sign "$SIGN" "$APP"
 codesign --force "${KC_ARGS[@]}" --sign "$SIGN" dist/notchi
 echo "Built $APP and dist/notchi (signed with: $SIGN_LABEL)"
-[[ "$SIGN" == "-" ]] && echo "Tip: run ./scripts/dev-signing.sh once so Accessibility permission survives rebuilds."
+# (an `if`, not `[[ ]] && echo`: as the last line that would make the script exit 1 whenever it is signed)
+if [[ "$SIGN" == "-" ]]; then
+  echo "Tip: run ./scripts/dev-signing.sh once so Accessibility permission survives rebuilds."
+fi

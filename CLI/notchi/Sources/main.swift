@@ -307,7 +307,7 @@ case "icon":
         fail("usage: notchi icon set|restore|list|preview (see notchi help)")
     }
 
-case "profile", "export":
+case "profile":
     fail("`\(args[0])` is coming in a later version. Follow along: https://github.com/hardikdhingra150/Notchi")
 
 default:
