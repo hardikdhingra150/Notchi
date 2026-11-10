@@ -73,6 +73,24 @@ import Testing
 }
 
 @Suite struct BatteryTests {
+    @Test func unpluggingAFullBatteryIsNotLow() {
+        let full = BatteryState(level: 1, isCharging: false, isPluggedIn: false)
+        #expect(!full.isLow)
+        #expect(full.banner.label == "On battery")
+        #expect(full.banner.symbol == "battery.100percent")
+        #expect(BatteryState(level: 0.5, isCharging: false, isPluggedIn: false).banner.symbol == "battery.50percent")
+    }
+
+    @Test func lowOnlyWhenUnpluggedAtOrBelowTwentyPercent() {
+        #expect(BatteryState(level: 0.2, isCharging: false, isPluggedIn: false).banner.label == "Battery low")
+        #expect(!BatteryState(level: 0.21, isCharging: false, isPluggedIn: false).isLow)
+        let charging = BatteryState(level: 0.05, isCharging: true, isPluggedIn: true)
+        #expect(!charging.isLow)
+        #expect(charging.banner.label == "Charging")
+        #expect(BatteryState(level: 0.6, isCharging: false, isPluggedIn: true).banner.label == "Plugged in")
+        #expect(BatteryState(level: 1, isCharging: false, isPluggedIn: true).banner.label == "Fully charged")
+    }
+
     @Test func readingIsInRangeWhenPresent() {
         // Desktop Macs and CI runners have no battery; laptops must report 0...1.
         if let b = BatteryMonitor.current() {

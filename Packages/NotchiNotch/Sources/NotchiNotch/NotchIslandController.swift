@@ -172,7 +172,7 @@ public final class NotchIslandController {
             let old = model.battery
             model.battery = b
             if let old, old.isPluggedIn != b.isPluggedIn { model.show(.battery(b), for: 3) }
-            else if b.level <= 0.2, !b.isCharging, (old?.level ?? 1) > 0.2 { model.show(.battery(b), for: 5) }
+            else if b.isLow, old?.isLow != true { model.show(.battery(b), for: 5) }
         }
     }
 

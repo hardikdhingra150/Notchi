@@ -54,6 +54,22 @@ public struct BatteryState: Equatable, Sendable {
     }
 }
 
+extension BatteryState {
+    /// At or below this, an unplugged Mac counts as low.
+    public static let lowLevel = 0.2
+    public var isLow: Bool { !isPluggedIn && !isCharging && level <= Self.lowLevel }
+
+    /// What the notch says when the power changes: the words and the SF Symbol.
+    /// "Battery low" is only for a low battery, not for every unplug.
+    public var banner: (label: String, symbol: String) {
+        if isCharging { return ("Charging", "bolt.fill") }
+        if isPluggedIn { return (level >= 0.995 ? "Fully charged" : "Plugged in", "powerplug.fill") }
+        if isLow { return ("Battery low", "battery.25percent") }
+        let symbol = level > 0.875 ? "battery.100percent" : level > 0.625 ? "battery.75percent" : level > 0.375 ? "battery.50percent" : "battery.25percent"
+        return ("On battery", symbol)
+    }
+}
+
 @MainActor
 public final class EventBus {
     private let subject = PassthroughSubject<NotchiEvent, Never>()

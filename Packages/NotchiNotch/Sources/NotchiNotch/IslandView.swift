@@ -192,15 +192,15 @@ struct BannerContent: View {
             }
         case .battery(let b):
             HStack(spacing: 12) {
-                Image(systemName: b.isCharging ? "bolt.fill" : "battery.25percent")
+                Image(systemName: b.banner.symbol)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(b.isCharging ? model.accent : .red)
+                    .foregroundStyle(b.isLow ? .red : model.accent)
                     .symbolEffect(.pulse, isActive: b.isCharging && model.animate)
-                Text(b.isCharging ? "Charging" : b.isPluggedIn ? "Plugged in" : "Battery low")
+                Text(b.banner.label)
                     .font(.system(size: 15, weight: .semibold)).foregroundStyle(ink)
                 Spacer()
-                BatteryBar(level: b.level, accent: b.level < 0.2 && !b.isCharging ? .red : model.accent)
-                Text("\(Int(b.level * 100))%").font(.system(size: 14, weight: .semibold)).foregroundStyle(ink)
+                BatteryBar(level: b.level, accent: b.isLow ? .red : model.accent)
+                Text("\(Int((b.level * 100).rounded()))%").font(.system(size: 14, weight: .semibold)).foregroundStyle(ink)
             }
         case .volume(let v, let muted):
             LevelHUD(symbol: muted || v == 0 ? "speaker.slash.fill" : v < 0.34 ? "speaker.wave.1.fill" : v < 0.67 ? "speaker.wave.2.fill" : "speaker.wave.3.fill",
