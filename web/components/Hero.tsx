@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { REPO_URL } from "@/lib/site";
+import { APP_VERSION, DOWNLOAD_URL } from "@/lib/site";
 import { heroPast, heroProgress } from "@/lib/store";
-import { Down, Github, LogoMark } from "./icons";
+import { Down, LogoMark } from "./icons";
 import { scrollTo } from "./SmoothScroll";
 
 /* ───────── math ───────── */
@@ -372,8 +372,8 @@ export default function Hero() {
               <h1 className="display">Your notch<br />comes alive</h1>
               <p className="small-caps">One free app themes your whole Mac.<br />Notch, wallpaper, dock, icons and sounds.</p>
               <div className="t1-cta">
-                <a href="#explore" className="pill hot" onClick={toEnd}>Open it up <Down /></a>
-                <a href={REPO_URL} className="pill" target="_blank" rel="noreferrer"><Github /> Star on GitHub</a>
+                <a href={DOWNLOAD_URL} className="pill hot" aria-label={`Download Notchi ${APP_VERSION} for Mac`}><Down /> Download for Mac</a>
+                <a href="#explore" className="pill" onClick={toEnd}>Open it up</a>
               </div>
             </div>
 
