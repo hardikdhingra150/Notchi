@@ -7,7 +7,7 @@ git tag v0.5.0-beta.2 && git push origin v0.5.0-beta.2   # beta
 git tag v0.5.0 && git push origin v0.5.0                 # release
 ```
 
-It builds a universal `Notchi.app`, zips it with the CLI, writes `SHA256SUMS.txt`,
+It builds a universal `Notchi.app`, packs it as a `.dmg` and a `.zip`, adds the CLI, writes `SHA256SUMS.txt`,
 and publishes a GitHub Release. Everything below is free.
 
 ## One-time setup (maintainer only)
@@ -48,8 +48,13 @@ pre-releases, so betas are published as normal releases for now; otherwise peopl
 on a beta would never be offered the next one.
 
 ## How users install
-Download `Notchi-<version>.zip`, move Notchi.app to Applications, open it, then
-**System Settings → Privacy & Security → Open Anyway** (once). See the website's install section.
+Download `Notchi-<version>.dmg`, open it, drag Notchi to Applications, open it, then
+**System Settings → Privacy & Security → Open Anyway** (once). The steps are also in a
+text file inside the disk image and in the website's install section.
+
+The release also has `Notchi-<version>.zip`. That one is for the updater: the update
+feed points at it and its signature is in `appcast.xml`. `scripts/dmg.sh` builds the
+disk image from `dist/Notchi.app`.
 
 ## A note on hardened runtime
 

@@ -49,12 +49,14 @@ jobs:
           NOTCHI_ED_PUBLIC_KEY: ${{ vars.NOTCHI_ED_PUBLIC_KEY }}
         run: ./scripts/bundle.sh
 
+      # The .dmg is what people download; the .zip is what the updater installs.
       - name: Package
         run: |
+          ./scripts/dmg.sh
           cd dist
           ditto -c -k --keepParent Notchi.app "Notchi-$VERSION.zip"
           tar -czf "notchi-cli-$VERSION.tar.gz" notchi
-          shasum -a 256 "Notchi-$VERSION.zip" "notchi-cli-$VERSION.tar.gz" > SHA256SUMS.txt
+          shasum -a 256 "Notchi-$VERSION.dmg" "Notchi-$VERSION.zip" "notchi-cli-$VERSION.tar.gz" > SHA256SUMS.txt
 
       # Sparkle update feed, signed with Notchi's own EdDSA key (free).
       - name: Sign update and write appcast
@@ -93,6 +95,6 @@ jobs:
           # pre-release would never reach people who are already on a beta. Once there is a
           # stable release, bring --prerelease back together with a separate beta feed.
           FLAGS=""
-          FILES="dist/Notchi-$VERSION.zip dist/notchi-cli-$VERSION.tar.gz dist/SHA256SUMS.txt"
+          FILES="dist/Notchi-$VERSION.dmg dist/Notchi-$VERSION.zip dist/notchi-cli-$VERSION.tar.gz dist/SHA256SUMS.txt"
           [[ -f dist/appcast.xml ]] && FILES="$FILES dist/appcast.xml"
           gh release create "$GITHUB_REF_NAME" $FILES --title "Notchi $VERSION" --generate-notes $FLAGS
