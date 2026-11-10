@@ -14,6 +14,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var systemHUD = SystemHUD(bus: bus, volume: volume)
     lazy var wallpaper = WallpaperController(bus: bus, energy: energy)
     lazy var coordinator = ThemeCoordinator(app: self)
+    lazy var setup = SetupManager(app: self)
+    /// Files double-clicked before the app finished starting.
+    private var pendingFiles: [URL] = []
+    private var launched = false
 
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
@@ -38,11 +42,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         battery.start()
         volume.start()
         systemHUD.start()
-        wallpaper.start()
+        wallpaper.start(restore: false)
+        coordinator.syncWallpaper(animated: false)
         coordinator.start()
         ipc = IPCServer(app: self)
         ipc?.start()
         if !OnboardingWindowController.isDone { showOnboarding() }
+        launched = true
+        pendingFiles.forEach(open)
+        pendingFiles = []
+    }
+
+    /// Double-clicking a .notchitheme installs and applies it; a .notchibackup asks before restoring.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        if launched { urls.forEach(open) } else { pendingFiles += urls }
+    }
+
+    private func open(_ url: URL) {
+        switch url.pathExtension.lowercased() {
+        case SetupBackup.fileExtension:
+            setup.confirmRestore(url)
+        default:
+            do { try setup.installTheme(url, apply: true) } catch {
+                let a = NSAlert()
+                a.messageText = "Couldn't install that theme"
+                a.informativeText = "\(error)"
+                NSApp.activate(ignoringOtherApps: true)
+                a.runModal()
+            }
+        }
     }
 
     func showOnboarding() {

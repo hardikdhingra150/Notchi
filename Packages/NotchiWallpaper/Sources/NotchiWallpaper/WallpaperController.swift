@@ -54,7 +54,8 @@ public final class WallpaperController {
         self.energy = energy
     }
 
-    public func start() {
+    /// Start watching the screens and power. `restore: false` leaves showing the saved wallpaper to the caller.
+    public func start(restore: Bool = true) {
         let ws = NSWorkspace.shared.notificationCenter
         for (name, asleep) in [(NSWorkspace.screensDidSleepNotification, true), (NSWorkspace.screensDidWakeNotification, false),
                                (NSWorkspace.sessionDidResignActiveNotification, true), (NSWorkspace.sessionDidBecomeActiveNotification, false)] {
@@ -69,9 +70,19 @@ public final class WallpaperController {
             if case .energy = e { MainActor.assumeIsolated { self?.updatePlayback() } }
         }.store(in: &subs)
 
-        if let path = UserDefaults.standard.string(forKey: Self.defaultsKey) {
-            let saved = UserDefaults.standard.string(forKey: Self.sourceKey).flatMap(Source.init) ?? .user
-            try? set(URL(fileURLWithPath: path), source: saved)
+        if restore { reloadFromSettings() }
+    }
+
+    /// Show whatever the saved settings say (at launch, and after a backup is restored).
+    public func reloadFromSettings(animated: Bool = false) {
+        guard let path = UserDefaults.standard.string(forKey: Self.defaultsKey) else {
+            if url != nil { turnOff(animated: animated) }
+            return
+        }
+        let saved = UserDefaults.standard.string(forKey: Self.sourceKey).flatMap(Source.init) ?? .user
+        do { try set(URL(fileURLWithPath: path), source: saved, animated: animated) } catch {
+            // the video is gone: don't keep pointing at it
+            turnOff(animated: animated)
         }
     }
 

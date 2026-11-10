@@ -7,11 +7,12 @@ final class SettingsWindowController {
     private let window: NSWindow
 
     init(app: AppDelegate) {
-        let view = SettingsView(themes: app.themes, hud: app.systemHUD, energy: EnergyModel(governor: app.energy, bus: app.bus))
+        let view = SettingsView(themes: app.themes, hud: app.systemHUD, energy: EnergyModel(governor: app.energy, bus: app.bus),
+                                coordinator: app.coordinator, setup: app.setup)
         window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "Notchi Settings"
         window.styleMask = [.titled, .closable, .miniaturizable]
-        window.setContentSize(NSSize(width: 560, height: 420))
+        window.setContentSize(NSSize(width: 580, height: 470))
         window.isReleasedWhenClosed = false
         window.center()
     }
@@ -50,6 +51,8 @@ struct SettingsView: View {
     let themes: ThemeEngine
     let hud: SystemHUD
     @Bindable var energy: EnergyModel
+    @Bindable var coordinator: ThemeCoordinator
+    let setup: SetupManager
 
     var body: some View {
         TabView {
@@ -72,22 +75,49 @@ struct SettingsView: View {
             .formStyle(.grouped)
             .tabItem { Label("General", systemImage: "gearshape") }
 
-            List(themes.themes) { t in
-                HStack(spacing: 12) {
-                    Circle().fill(Color(nsColor: NSColor(t.accent))).frame(width: 18, height: 18)
-                    VStack(alignment: .leading) {
-                        Text(t.name).font(.headline)
-                        Text("by \(t.author) · \(t.appearance.rawValue)").font(.caption).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 10) {
+                List(themes.themes) { t in
+                    HStack(spacing: 12) {
+                        Circle().fill(Color(nsColor: NSColor(t.accent))).frame(width: 18, height: 18)
+                        VStack(alignment: .leading) {
+                            Text(t.name).font(.headline)
+                            Text("by \(t.author) · \(t.appearance.rawValue)\(themes.isUserTheme(t.id) ? " · installed by you" : "")").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Menu {
+                            Button("Export…") { setup.exportThemePanel(id: t.id) }
+                            if themes.isUserTheme(t.id) {
+                                Button("Remove", role: .destructive) { try? themes.remove(id: t.id) }
+                            }
+                        } label: { Image(systemName: "ellipsis.circle") }
+                            .menuStyle(.borderlessButton).fixedSize()
+                            .accessibilityLabel("More for \(t.name)")
+                        if t.id == themes.active.id {
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(nsColor: NSColor(t.accent)))
+                                .accessibilityLabel("Active")
+                        } else {
+                            Button("Apply") { themes.apply(t) }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                Toggle("Themes change my wallpaper", isOn: $coordinator.setsWallpaper)
+                Toggle("Folders tinted with the accent follow the theme", isOn: $coordinator.tintsIcons)
+                HStack {
+                    Button("Import Theme…") { setup.importThemePanel() }
+                    Button("Open Themes Folder") {
+                        try? FileManager.default.createDirectory(at: themes.userThemesFolder, withIntermediateDirectories: true)
+                        NSWorkspace.shared.open(themes.userThemesFolder)
                     }
                     Spacer()
-                    if t.id == themes.active.id {
-                        Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(nsColor: NSColor(t.accent)))
-                    } else {
-                        Button("Apply") { themes.apply(t) }
+                    if !themes.loadErrors.isEmpty {
+                        Label("\(themes.loadErrors.count) theme file\(themes.loadErrors.count == 1 ? "" : "s") couldn't load", systemImage: "exclamationmark.triangle")
+                            .font(.caption).foregroundStyle(.orange)
+                            .help(themes.loadErrors.joined(separator: "\n"))
                     }
                 }
-                .padding(.vertical, 4)
             }
+            .padding(.horizontal, 6)
             .tabItem { Label("Themes", systemImage: "paintpalette") }
 
             Form {
@@ -116,6 +146,26 @@ struct SettingsView: View {
             .formStyle(.grouped)
             .tabItem { Label("Energy", systemImage: "bolt") }
 
+            Form {
+                Section {
+                    LabeledContent("Back up my setup") { Button("Save Backup…") { setup.backupPanel() } }
+                    LabeledContent("Restore a backup") { Button("Choose File…") { setup.restorePanel() } }
+                    LabeledContent("Automatic backups") { Button("Show in Finder") {
+                        try? FileManager.default.createDirectory(at: setup.backupsFolder, withIntermediateDirectories: true)
+                        NSWorkspace.shared.open(setup.backupsFolder)
+                    } }
+                } footer: {
+                    Text("A backup is one file with your theme, settings, installed themes, custom icons and wallpaper. Notchi also saves one by itself before a restore or a reset, and keeps the newest five.")
+                }
+                Section {
+                    LabeledContent("Restore stock macOS") { Button("Restore…") { setup.confirmReset() } }
+                } footer: {
+                    Text("Turns off the wallpaper, puts back every icon Notchi changed and gives volume and brightness back to macOS.")
+                }
+            }
+            .formStyle(.grouped)
+            .tabItem { Label("Backup", systemImage: "externaldrive") }
+
             VStack(spacing: 10) {
                 Text("Notchi").font(.system(size: 34, weight: .bold, design: .serif))
                 Text("The notch, with personality.").foregroundStyle(.secondary)
@@ -126,6 +176,6 @@ struct SettingsView: View {
             .tabItem { Label("About", systemImage: "info.circle") }
         }
         .padding()
-        .frame(width: 560, height: 420)
+        .frame(width: 580, height: 470)
     }
 }

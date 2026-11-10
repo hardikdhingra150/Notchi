@@ -9,6 +9,14 @@ public enum IPCCommand: Codable, Equatable, Sendable {
     case ping(replyTo: String)
     /// nil path turns the video wallpaper off
     case wallpaper(path: String?, replyTo: String)
+    /// install a .notchitheme or .json file
+    case themeInstall(path: String, replyTo: String)
+    case themeExport(id: String, path: String, replyTo: String)
+    case themeRemove(id: String, replyTo: String)
+    case backup(path: String, replyTo: String)
+    case restore(path: String, replyTo: String)
+    /// "Restore stock macOS": wallpaper off, original icons back, macOS volume indicator back
+    case reset(replyTo: String)
 }
 
 public struct IPCReply: Codable, Equatable, Sendable {

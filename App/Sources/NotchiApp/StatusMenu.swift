@@ -27,6 +27,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         menu.addItem(title)
         menu.addItem(.separator())
 
+        app.themes.reload()   // themes added or edited by hand show up without a restart
         let themeItem = NSMenuItem(title: "Theme", action: nil, keyEquivalent: "")
         let sub = NSMenu()
         for t in app.themes.themes {
@@ -37,6 +38,10 @@ final class StatusMenu: NSObject, NSMenuDelegate {
             mi.image = Self.swatch(t.accent)
             sub.addItem(mi)
         }
+        sub.addItem(.separator())
+        sub.addItem(withTitle: "Import Theme…", action: #selector(importTheme), keyEquivalent: "").target = self
+        sub.addItem(withTitle: "Export \(app.themes.active.name)…", action: #selector(exportTheme), keyEquivalent: "").target = self
+        sub.addItem(withTitle: "Open Themes Folder", action: #selector(openThemesFolder), keyEquivalent: "").target = self
         themeItem.submenu = sub
         menu.addItem(themeItem)
 
@@ -76,6 +81,15 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: "Test the Notch", action: #selector(testNotch), keyEquivalent: "t").target = self
         menu.addItem(.separator())
 
+        let setupItem = NSMenuItem(title: "Backup", action: nil, keyEquivalent: "")
+        let setup = NSMenu()
+        setup.addItem(withTitle: "Back Up My Setup…", action: #selector(backUp), keyEquivalent: "").target = self
+        setup.addItem(withTitle: "Restore from Backup…", action: #selector(restoreBackup), keyEquivalent: "").target = self
+        setup.addItem(.separator())
+        setup.addItem(withTitle: "Restore Stock macOS…", action: #selector(resetStock), keyEquivalent: "").target = self
+        setupItem.submenu = setup
+        menu.addItem(setupItem)
+
         let login = NSMenuItem(title: "Open at Login", action: #selector(toggleLogin), keyEquivalent: "")
         login.target = self
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
@@ -93,6 +107,17 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         guard let id = sender.representedObject as? String else { return }
         app.themes.apply(id: id)
     }
+
+    @objc private func importTheme() { app.setup.importThemePanel() }
+    @objc private func exportTheme() { app.setup.exportThemePanel(id: app.themes.active.id) }
+    @objc private func openThemesFolder() {
+        let dir = app.themes.userThemesFolder
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        NSWorkspace.shared.open(dir)
+    }
+    @objc private func backUp() { app.setup.backupPanel() }
+    @objc private func restoreBackup() { app.setup.restorePanel() }
+    @objc private func resetStock() { app.setup.confirmReset() }
 
     @objc private func chooseWallpaper() {
         let panel = NSOpenPanel()

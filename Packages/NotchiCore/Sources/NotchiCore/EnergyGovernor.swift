@@ -119,6 +119,12 @@ public final class EnergyGovernor {
         update()
     }
 
+    /// Read the user's choices again (after a backup is restored).
+    public func reloadRules() {
+        rules = Rules(batteryFPS: defaults.object(forKey: Self.fpsKey) as? Int ?? 15,
+                      pauseWhenLow: defaults.object(forKey: Self.lowKey) as? Bool ?? true)
+    }
+
     public func update() {
         let thermal: Thermal = switch ProcessInfo.processInfo.thermalState {
         case .nominal: .nominal

@@ -5,7 +5,7 @@
 set -e
 cd "$(dirname "$0")/.."
 CONFIG="${CONFIG:-release}"
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-0.5.0}"
 BUILD="${BUILD:-1}"
 # ARCHS="arm64 x86_64" builds a universal app (needs Xcode); default is this Mac's arch.
 ARCH_FLAGS=()
@@ -53,6 +53,34 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>SUEnableAutomaticChecks</key><true/>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSUIElement</key><true/>
+  <key>CFBundleDocumentTypes</key><array>
+    <dict>
+      <key>CFBundleTypeName</key><string>Notchi Theme</string>
+      <key>CFBundleTypeRole</key><string>Viewer</string>
+      <key>LSHandlerRank</key><string>Owner</string>
+      <key>LSItemContentTypes</key><array><string>app.notchi.theme</string></array>
+    </dict>
+    <dict>
+      <key>CFBundleTypeName</key><string>Notchi Backup</string>
+      <key>CFBundleTypeRole</key><string>Viewer</string>
+      <key>LSHandlerRank</key><string>Owner</string>
+      <key>LSItemContentTypes</key><array><string>app.notchi.backup</string></array>
+    </dict>
+  </array>
+  <key>UTExportedTypeDeclarations</key><array>
+    <dict>
+      <key>UTTypeIdentifier</key><string>app.notchi.theme</string>
+      <key>UTTypeDescription</key><string>Notchi Theme</string>
+      <key>UTTypeConformsTo</key><array><string>public.data</string></array>
+      <key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>notchitheme</string></array></dict>
+    </dict>
+    <dict>
+      <key>UTTypeIdentifier</key><string>app.notchi.backup</string>
+      <key>UTTypeDescription</key><string>Notchi Backup</string>
+      <key>UTTypeConformsTo</key><array><string>public.data</string></array>
+      <key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>notchibackup</string></array></dict>
+    </dict>
+  </array>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSAppleEventsUsageDescription</key><string>Notchi shows what's playing in Music or Spotify and lets you control it from the notch.</string>
   <key>NSHumanReadableCopyright</key><string>Free and open source under GPL-3.0.</string>
