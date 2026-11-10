@@ -1,6 +1,6 @@
 name: Release
 
-# Push a tag like v0.1.0 (or v0.1.0-beta.1 for a pre-release) to publish.
+# Push a tag like v0.5.0 (or v0.5.0-beta.2 for a beta) to publish.
 on:
   push:
     tags: ["v*"]
@@ -88,8 +88,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Betas are published as normal releases for now: the app reads its update feed from
+          # releases/latest/download/appcast.xml, and GitHub's "latest" skips pre-releases, so a
+          # pre-release would never reach people who are already on a beta. Once there is a
+          # stable release, bring --prerelease back together with a separate beta feed.
           FLAGS=""
-          [[ "$GITHUB_REF_NAME" == *-* ]] && FLAGS="--prerelease"
           FILES="dist/Notchi-$VERSION.zip dist/notchi-cli-$VERSION.tar.gz dist/SHA256SUMS.txt"
           [[ -f dist/appcast.xml ]] && FILES="$FILES dist/appcast.xml"
           gh release create "$GITHUB_REF_NAME" $FILES --title "Notchi $VERSION" --generate-notes $FLAGS

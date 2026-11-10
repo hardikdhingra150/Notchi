@@ -111,6 +111,17 @@ if [[ -z "${NOTCHI_SIGN_ID:-}" && -f "$DEVKC" ]]; then
     echo "Couldn't find the Notchi Local Dev identity; signing ad hoc."
   fi
 fi
+# A self-signed certificate isn't trusted, so codesign can't find it by name;
+# look up its SHA-1 fingerprint instead (works for trusted identities too).
+if [[ -n "${NOTCHI_SIGN_ID:-}" ]]; then
+  ID_HASH="$(security find-identity -p codesigning | awk -v n="\"$NOTCHI_SIGN_ID\"" 'index($0, n) { print $2; exit }')"
+  if [[ -n "$ID_HASH" ]]; then
+    SIGN="$ID_HASH"
+  else
+    echo "error: no code-signing identity named \"$NOTCHI_SIGN_ID\" in the keychain search list" >&2
+    exit 1
+  fi
+fi
 # Hardened runtime turns on library validation, which only accepts frameworks
 # signed by the same Apple Team ID. Ad hoc and self-signed builds have no team,
 # so the embedded Sparkle.framework would be rejected at launch. Only opt in

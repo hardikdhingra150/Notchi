@@ -3,8 +3,8 @@
 Releases are built by `.github/workflows/release.yml` when you push a tag:
 
 ```bash
-git tag v0.1.0-beta.1 && git push origin v0.1.0-beta.1   # pre-release
-git tag v0.1.0 && git push origin v0.1.0                 # release
+git tag v0.5.0-beta.2 && git push origin v0.5.0-beta.2   # beta
+git tag v0.5.0 && git push origin v0.5.0                 # release
 ```
 
 It builds a universal `Notchi.app`, zips it with the CLI, writes `SHA256SUMS.txt`,
@@ -12,25 +12,40 @@ and publishes a GitHub Release. Everything below is free.
 
 ## One-time setup (maintainer only)
 
-### 1. Free self-signed certificate (keeps permissions across updates)
-1. Keychain Access → Certificate Assistant → **Create a Certificate…**
-2. Name: `Notchi Self-Signed`, Identity Type: **Self Signed Root**, Certificate Type: **Code Signing**.
-3. Export it from the **login** keychain as `notchi.p12` with a password.
-4. Repo → Settings → Secrets and variables → Actions → **Secrets**:
-   - `NOTCHI_CERT_P12`: output of `base64 -i notchi.p12 | pbcopy`
-   - `NOTCHI_CERT_PASSWORD`: the export password
-   - `NOTCHI_SIGN_ID`: `Notchi Self-Signed`
+```bash
+./scripts/release-setup.sh
+```
 
-Without these, builds are signed ad hoc and users have to re-grant permissions after each update.
+It creates two things on your Mac and stores them as GitHub Actions secrets:
 
-### 2. Sparkle update key (signs every update)
-1. Download Sparkle 2.10.0 from its GitHub releases and run `./bin/generate_keys`.
-   It saves the private key in your login keychain and prints the public key.
-2. Repo → Settings → Secrets and variables → Actions:
-   - **Variable** `NOTCHI_ED_PUBLIC_KEY`: the printed public key
-   - **Secret** `SPARKLE_ED_PRIVATE_KEY`: output of `./bin/generate_keys -x private.key && cat private.key` (delete the file after)
+- **A Sparkle update key.** Every update is signed with it, and the app refuses updates
+  whose signature doesn't match. The private key is in your login keychain (account
+  `notchi`); the public key goes into the app.
+- **A self-signed certificate** (`Notchi Self-Signed`). Every release then has the same
+  signature, so macOS keeps the Accessibility permission people granted across updates.
 
-Without these the app still works, it just won't offer updates.
+Both are also saved in `~/Library/Application Support/Notchi/ReleaseSigning`.
+**Back that folder up.** If the update key is lost, people on older versions can never be
+auto-updated again and have to download a new build by hand.
+
+| Where | Name | What |
+|---|---|---|
+| Variable | `NOTCHI_ED_PUBLIC_KEY` | Update key, public half |
+| Secret | `SPARKLE_ED_PRIVATE_KEY` | Update key, private half |
+| Secret | `NOTCHI_CERT_P12` | The certificate, base64 |
+| Secret | `NOTCHI_CERT_PASSWORD` | Its password |
+| Secret | `NOTCHI_SIGN_ID` | `Notchi Self-Signed` |
+
+Without the update key the app still works, it just won't offer updates. Without the
+certificate, builds are signed ad hoc and people have to grant permissions again after
+each update. 0.5.0-beta.1 was built without either, so people on it need to download the
+next version by hand once.
+
+## Betas and the update feed
+
+The app reads `releases/latest/download/appcast.xml`. GitHub's "latest" skips
+pre-releases, so betas are published as normal releases for now; otherwise people already
+on a beta would never be offered the next one.
 
 ## How users install
 Download `Notchi-<version>.zip`, move Notchi.app to Applications, open it, then
