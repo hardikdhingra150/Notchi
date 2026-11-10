@@ -7,8 +7,8 @@ export const RELEASES: Release[] = [
     version: "v0.5",
     label: "Themes",
     date: "2026-11-10",
-    status: "unreleased",
-    summary: "One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
+    status: "released",
+    summary: "Out now as the first public beta (0.5.0-beta.1). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
     changes: [
       { kind: "new", area: "App", text: "Applying a theme fades the wallpaper to the theme's video. Each of the five built-in themes now has one." },
       { kind: "new", area: "App", text: "The notch takes its glow colour and idle style from the theme: breathing, sparks, rain, a blinking pet, or none." },

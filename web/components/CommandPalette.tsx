@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { applyTheme } from "@/lib/applyTheme";
 import { EXTRA_PAGES, PAGES } from "@/lib/pages";
-import { BREW, REPO_URL, RELEASES_URL } from "@/lib/site";
+import { APP_VERSION, DOWNLOAD_URL, REPO_URL, RELEASES_URL } from "@/lib/site";
 import { THEMES } from "@/lib/themes";
 import { setScrollLocked } from "./SmoothScroll";
 
@@ -66,9 +66,9 @@ export default function CommandPalette() {
     ...PAGES.map((p) => ({ id: p.href, group: "Go to", label: p.title, hint: p.card, keys: p.no, run: () => router.push(p.href) })),
     ...EXTRA_PAGES.map((p) => ({ id: p.href, group: "Go to", label: p.title, hint: p.card, run: () => router.push(p.href) })),
     ...THEMES.map((t) => ({ id: `theme-${t.id}`, group: "Apply theme", label: t.name, hint: t.vibe, swatch: t.accent, run: () => applyTheme(t.id) })),
-    { id: "brew", group: "Actions", label: "Copy install command", hint: BREW, run: () => { navigator.clipboard?.writeText(BREW).catch(() => {}); flash("Install command copied"); } },
+    { id: "download", group: "Actions", label: "Download Notchi", hint: `v${APP_VERSION} for macOS 14 or later`, run: () => { location.href = DOWNLOAD_URL; flash("Downloading Notchi"); } },
     { id: "star", group: "Actions", label: "Star Notchi on GitHub", hint: "github.com/hardikdhingra150/Notchi", run: () => open_(REPO_URL) },
-    { id: "releases", group: "Actions", label: "Download a release", hint: "GitHub Releases", run: () => open_(RELEASES_URL) },
+    { id: "releases", group: "Actions", label: "See all releases", hint: "GitHub Releases", run: () => open_(RELEASES_URL) },
     { id: "issue", group: "Actions", label: "Report a bug or request a feature", hint: "GitHub Issues", run: () => open_(`${REPO_URL}/issues/new/choose`) },
   ], [router]);
 

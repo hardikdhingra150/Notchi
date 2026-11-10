@@ -1,32 +1,9 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
-import { BREW, RELEASES_URL } from "@/lib/site";
-import { Check, Copy } from "./icons";
+import { motion } from "motion/react";
+import { APP_VERSION, DOWNLOAD_URL, RELEASES_URL } from "@/lib/site";
+import { Down } from "./icons";
 import { Reveal, SectionHead } from "./ui";
-
-function CopyCmd() {
-  const [done, setDone] = useState(false);
-  const copy = async () => {
-    try { await navigator.clipboard.writeText(BREW); } catch {}
-    setDone(true);
-    setTimeout(() => setDone(false), 1800);
-  };
-  return (
-    <button className="brew" onClick={copy} aria-label="Copy the Homebrew install command">
-      <span className="ps">$</span>
-      <code>{BREW}</code>
-      <span className="brew-btn">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span key={String(done)} initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -18, opacity: 0 }} style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-            {done ? <><Check width={16} height={16} /> Copied</> : <><Copy width={16} height={16} /> Copy</>}
-          </motion.span>
-        </AnimatePresence>
-      </span>
-    </button>
-  );
-}
 
 const loop = { repeat: Infinity, repeatDelay: 0.6 } as const;
 
@@ -67,8 +44,8 @@ function StepArt({ n }: { n: number }) {
 }
 
 const STEPS = [
-  { t: "Download", d: "Grab Notchi.app from GitHub Releases, or install it with Homebrew." },
-  { t: "Open Anyway", d: "Notchi is signed with a free certificate, so macOS asks once. System Settings → Privacy & Security → Open Anyway." },
+  { t: "Download", d: "Get the zip, unzip it and move Notchi.app to your Applications folder." },
+  { t: "Open Anyway", d: "Notchi isn't signed with a paid Apple certificate, so macOS asks once. System Settings → Privacy & Security → Open Anyway." },
   { t: "Pick a theme", d: "The notch wakes up and walks you through each module. Every permission is asked only when a feature needs it." },
 ];
 
@@ -78,7 +55,7 @@ export default function Install() {
       <div className="wrap">
         <SectionHead center eyebrow="Get Notchi" title={"Three steps\nto a new Mac"} sub="macOS 14 Sonoma or later, on Apple silicon and Intel, with or without a notch. Macs without one get a virtual island." />
         <Reveal className="inst-status" delay={0.2}>
-          <span className="live-dot" /> v0.1 is feature-complete. The first public build lands soon, so star the repo to hear when it ships.
+          <span className="live-dot" /> The first public beta is out: v{APP_VERSION}, with the notch island and themes. Free, like everything else.
         </Reveal>
         <div className="steps">
           {STEPS.map((s, i) => (
@@ -91,8 +68,8 @@ export default function Install() {
           ))}
         </div>
         <Reveal className="inst" delay={0.1}>
-          <CopyCmd />
-          <a className="pill" href={RELEASES_URL} target="_blank" rel="noreferrer">GitHub Releases</a>
+          <a className="pill hot" href={DOWNLOAD_URL}><Down /> Download Notchi {APP_VERSION}</a>
+          <a className="pill" href={RELEASES_URL} target="_blank" rel="noreferrer">All releases</a>
         </Reveal>
       </div>
     </section>
