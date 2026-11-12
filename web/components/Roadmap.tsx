@@ -8,7 +8,7 @@ const PHASES = [
   { v: "Phase 0", when: "Week 1", title: "Setup", items: ["Repo, licences and automated builds", "Release pipeline + Sparkle updates", "This website"], status: "done" },
   { v: "v0.1", when: "Weeks 2–6", title: "MVP", items: ["Notch island: music, battery, volume, brightness, file shelf", "Live video wallpaper and icon studio", "notchi CLI basics and onboarding"], status: "done" },
   { v: "v0.5", when: "Weeks 7–10", title: "Themes", items: ["Theme editor and theme file sharing", "Theme reaches the wallpaper and icons", "Backup and restore of every change"], status: "done" },
-  { v: "v1.0", when: "Weeks 11–16", title: "Launch", items: ["Glass sidebar and profiles", "Shader wallpapers, virtual island", "Community gallery, accessibility pass"], status: "now" },
+  { v: "v1.0", when: "Weeks 11–16", title: "Launch", items: ["Glass sidebar (profiles and the virtual island are in)", "Shader wallpapers drawn in your theme's colours", "Community gallery, accessibility pass"], status: "now" },
   { v: "v1.5", when: "Months 5–6", title: "Desktop", items: ["Custom dock and menu bar styling", "Cursor and sound effects", "Desktop widgets"], status: "later" },
   { v: "v2.0", when: "Months 7–9", title: "Platform", items: ["Plugin SDK (MIT)", "On-device AI theme generator", "In-app store and 8 languages"], status: "later" },
 ];

@@ -8,7 +8,7 @@ export const RELEASES: Release[] = [
     label: "Themes",
     date: "2026-11-10",
     status: "released",
-    summary: "Out now as a public beta (0.5.0-beta.4). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
+    summary: "Out now as a public beta (0.5.0-beta.5). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
     changes: [
       { kind: "new", area: "App", text: "Applying a theme fades the wallpaper to the theme's video. Each of the five built-in themes now has one." },
       { kind: "new", area: "App", text: "The notch takes its glow colour and idle style from the theme: breathing, sparks, rain, a blinking pet, or none." },
@@ -22,6 +22,10 @@ export const RELEASES: Release[] = [
       { kind: "new", area: "App", text: "Beta 3: Notchi updates itself. Every update is signed, and macOS keeps your permissions across updates." },
       { kind: "fix", area: "App", text: "Beta 3: unplugging the charger no longer says \"Battery low\" on a full battery." },
       { kind: "better", area: "App", text: "Beta 4: Notchi downloads as a disk image. Open it and drag Notchi into Applications." },
+      { kind: "new", area: "App", text: "Beta 5: a Wallpapers window. Browse the whole library, real NASA footage included, and use one in one click." },
+      { kind: "new", area: "App", text: "Beta 5: profiles. Save a setup as \"Work\" or \"Night\" and switch back to it in one click or with notchi profile." },
+      { kind: "new", area: "App", text: "Beta 5: choose which screen the island lives on, and hide it while idle on screens without a notch." },
+      { kind: "new", area: "App", text: "Beta 5: install with Homebrew." },
     ],
   },
   {
@@ -60,6 +64,18 @@ export const RELEASES: Release[] = [
       { kind: "new", area: "App", text: "The notchi command: notify, progress, apply, theme list, wallpaper, icon, status and doctor." },
       { kind: "new", area: "App", text: "Five built-in themes, a first-launch tour and Open at Login." },
       { kind: "new", area: "App", text: "Release pipeline with signed Sparkle auto-updates." },
+    ],
+  },
+  {
+    version: "Site v9",
+    label: "One-click themes",
+    date: "2026-11-13",
+    status: "released",
+    summary: "Themes from the builder install with a double-click, and the app can browse the wallpaper library itself.",
+    changes: [
+      { kind: "new", area: "Website", text: "The theme builder downloads a .notchitheme with the wallpaper video inside, from any wallpaper in the library." },
+      { kind: "new", area: "Website", text: "The wallpaper library is published as wallpapers.json, which the app's Wallpapers window reads." },
+      { kind: "new", area: "Website", text: "Install with Homebrew, right under the download button." },
     ],
   },
   {
