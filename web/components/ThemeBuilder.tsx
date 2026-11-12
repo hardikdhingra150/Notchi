@@ -2,6 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
+import { COLLECTIONS, WALLPAPERS } from "@/lib/wallpapers";
+import { zip } from "@/lib/zip";
 import { Check, Copy, Down } from "./icons";
 import { SectionHead } from "./ui";
 
@@ -9,14 +11,7 @@ import { SectionHead } from "./ui";
    schema 1, validated by Theme.validate() in NotchiCore). */
 
 const ACCENTS = ["#FF6A3D", "#8F7CFF", "#4F9A3A", "#E2507F", "#FF3FD8", "#3FA9F5", "#F2A65A", "#14B8A6"];
-const WALLPAPERS = [
-  { v: "wallpapers/ink-tide.mp4", label: "Ink tide" },
-  { v: "wallpapers/starfield.mp4", label: "Starfield" },
-  { v: "wallpapers/leaf-drift.mp4", label: "Leaf drift" },
-  { v: "wallpapers/petals.mp4", label: "Petals" },
-  { v: "wallpapers/neon-rain.mp4", label: "Rain" },
-];
-const IDLE = ["breathing", "sparks", "rain", "pet"] as const;
+const IDLE = ["breathing", "sparks", "rain", "pet", "none"] as const;
 const DOCKS = ["floating-glass", "minimal", "centered-pill", "vertical"] as const;
 const SOUNDS = ["soft-pencil", "low-hum", "wood-tap", "chimes", "soft-synth"] as const;
 const CURSORS = ["ring", "comet", "leaf", "petal", "spark"] as const;
@@ -54,7 +49,9 @@ export default function ThemeBuilder() {
   const [accent, setAccent] = useState("#3FA9F5");
   const [blur, setBlur] = useState(0.75);
   const [tint, setTint] = useState(0.25);
-  const [wallpaper, setWallpaper] = useState("wallpapers/starfield.mp4");
+  const [wallpaper, setWallpaper] = useState("earth-cloud-deck");
+  const [packing, setPacking] = useState<null | number>(null);
+  const [failed, setFailed] = useState(false);
   const [idle, setIdle] = useState<(typeof IDLE)[number]>("breathing");
   const [dock, setDock] = useState<(typeof DOCKS)[number]>("floating-glass");
   const [sounds, setSounds] = useState<(typeof SOUNDS)[number]>("soft-synth");
@@ -71,7 +68,7 @@ export default function ThemeBuilder() {
     appearance,
     accent: accent.toUpperCase(),
     glass: { blur, tint },
-    wallpaper: { type: "video", src: wallpaper, fps: 30 },
+    wallpaper: { type: "video", src: `wallpapers/${wallpaper}.mp4`, fps: 30 },
     icons: { pack: "default", tintFolders: true },
     notch: { glow: "accent", idle, visualizer: true },
     sidebar: { widgets: ["nowPlaying", "calendar", "stats"] },
@@ -85,11 +82,40 @@ export default function ThemeBuilder() {
   const bg = appearance === "dark" ? mix(accent, "#0b0b10", 0.86) : mix(accent, "#f6f1e6", 0.86);
   const ink = appearance === "dark" ? "#f1ece2" : "#16130e";
 
-  const download = () => {
-    const url = URL.createObjectURL(new Blob([json + "\n"], { type: "application/json" }));
-    const a = Object.assign(document.createElement("a"), { href: url, download: `${id}.json` });
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const save = (blob: Blob, file: string) => {
+    const url = URL.createObjectURL(blob);
+    Object.assign(document.createElement("a"), { href: url, download: file }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+  /** The theme and its video in one .notchitheme, the same package `notchi theme export` makes. */
+  const download = async () => {
+    if (packing !== null) return;
+    setFailed(false);
+    setPacking(0);
+    try {
+      const res = await fetch(`/wallpapers/${wallpaper}.mp4`);
+      if (!res.ok || !res.body) throw new Error(String(res.status));
+      const total = Number(res.headers.get("content-length")) || 0;
+      const reader = res.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let got = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        got += value.length;
+        if (total) setPacking(got / total);
+      }
+      const video = new Uint8Array(got);
+      let at = 0;
+      for (const c of chunks) { video.set(c, at); at += c.length; }
+      const manifest = new TextEncoder().encode(json + "\n");
+      save(zip([{ path: "theme.json", data: manifest }, { path: `wallpapers/${wallpaper}.mp4`, data: video }]), `${id}.notchitheme`);
+    } catch {
+      setFailed(true);
+    } finally {
+      setPacking(null);
+    }
   };
   const copy = () => {
     navigator.clipboard?.writeText(json).catch(() => {});
@@ -131,7 +157,16 @@ export default function ThemeBuilder() {
                 ))}
               </div>
             </div>
-            <Select label="Wallpaper" value={wallpaper} options={WALLPAPERS.map((w) => w.v)} onChange={setWallpaper} />
+            <label className="tb-field">
+              <span>Wallpaper</span>
+              <select value={wallpaper} onChange={(e) => setWallpaper(e.target.value)}>
+                {COLLECTIONS.map((c) => (
+                  <optgroup key={c.id} label={c.name}>
+                    {WALLPAPERS.filter((w) => w.collection === c.id).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
             <Select label="Notch idle" value={idle} options={IDLE} onChange={setIdle} />
             <Select label="Dock" value={dock} options={DOCKS} onChange={setDock} />
             <Select label="Sounds" value={sounds} options={SOUNDS} onChange={setSounds} />
@@ -168,11 +203,14 @@ export default function ThemeBuilder() {
               </div>
               <pre>{json}</pre>
             </div>
-            <button className="pill hot tb-dl" onClick={download}><Down /> Download {id}.json</button>
+            <button className="pill hot tb-dl" onClick={download} disabled={packing !== null} aria-live="polite">
+              <Down /> {packing === null ? `Download ${id}.notchitheme` : `Packing… ${Math.round(packing * 100)}%`}
+            </button>
+            {failed && <p className="tb-err" role="alert">Couldn&apos;t fetch the wallpaper. Check your connection and try again.</p>}
             <ol className="tb-steps">
-              <li>Install it: <code>notchi theme install ~/Downloads/{id}.json</code></li>
-              <li>For the wallpaper, download <a href={`/${wallpaper}`} download>{wallpaper.split("/")[1]}</a> into <code>~/Library/Application Support/Notchi/Themes/{id}/wallpapers</code></li>
-              <li>Pick it from the menu bar, or run <code>notchi apply {id}</code></li>
+              <li>Double-click <code>{id}.notchitheme</code> in Downloads. Notchi installs it and switches to it.</li>
+              <li>Or from the terminal: <code>notchi theme install ~/Downloads/{id}.notchitheme</code></li>
+              <li>The wallpaper video is inside, so there&apos;s nothing else to download.</li>
             </ol>
           </div>
         </div>
