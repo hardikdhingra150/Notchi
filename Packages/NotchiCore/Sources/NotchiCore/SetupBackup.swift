@@ -40,7 +40,7 @@ public enum SetupBackup {
     static let settings: [(key: String, kind: Kind)] = [
         ("activeTheme", .string), ("wallpaperVideo", .string), ("wallpaperSource", .string),
         ("replaceSystemHUD", .bool), ("batteryFPS", .int), ("pauseWhenBatteryLow", .bool),
-        ("themeSetsWallpaper", .bool), ("themeTintsIcons", .bool),
+        ("themeSetsWallpaper", .bool), ("themeTintsIcons", .bool), ("islandScreen", .string), ("hideIdleVirtualIsland", .bool),
     ]
 
     public struct Manifest: Codable, Equatable, Sendable {

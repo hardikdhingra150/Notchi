@@ -53,6 +53,7 @@ public final class NotchIslandController {
     public func start() {
         applyTheme(themes.active)
         applyEnergy(energy.budget)
+        model.hideIdleVirtual = UserDefaults.standard.bool(forKey: Self.hideIdleKey)
         let p = IslandPanel(frame: .zero)
         let host = FirstClickHostingView(rootView: IslandView(model: model))
         host.frame = NSRect(origin: .zero, size: Self.canvas)
@@ -83,8 +84,19 @@ public final class NotchIslandController {
         }.store(in: &subs)
     }
 
+    public static let hideIdleKey = "hideIdleVirtualIsland"
+
+    /// Read the island settings again and move it if needed (Settings calls this).
+    public func settingsChanged() {
+        model.hideIdleVirtual = UserDefaults.standard.bool(forKey: Self.hideIdleKey)
+        layout()
+    }
+
+    private var screenID: CGDirectDisplayID?
+
     private func layout() {
         guard let screen = DisplayManager.preferredScreen, let panel else { return }
+        screenID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
         let g = DisplayManager.notch(on: screen)
         geometry = g
         model.notchSize = g.rect.size
@@ -121,7 +133,16 @@ public final class NotchIslandController {
         }
     }
 
+    /// "The screen with the pointer": follow it, but never while the island is open.
+    private func followPointer() {
+        guard DisplayManager.placement == .pointer, model.mode == .closed || model.mode == .compact,
+              let screen = DisplayManager.preferredScreen,
+              (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID) != screenID else { return }
+        layout()
+    }
+
     private func pointerMoved() {
+        followPointer()
         let p = NSEvent.mouseLocation
         // dragging files: open a bit earlier so the shelf is there to catch them
         let margin: CGFloat = isDraggingFiles ? 60 : 10

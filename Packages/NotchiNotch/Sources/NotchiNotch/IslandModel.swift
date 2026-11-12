@@ -28,6 +28,10 @@ public final class IslandModel {
     /// Hardware notch size in points (or the virtual island's size).
     public var notchSize = CGSize(width: 190, height: 32)
     public var isHardwareNotch = true
+    /// On a screen without a notch: keep the island out of sight until something happens.
+    public var hideIdleVirtual = false
+    /// The closed island is invisible (it still opens when you hover where it is).
+    public var isIdleHidden: Bool { !isHardwareNotch && hideIdleVirtual && mode == .closed }
 
     public var hovering = false
     public var activity: IslandActivity?

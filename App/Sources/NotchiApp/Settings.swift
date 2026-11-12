@@ -1,5 +1,6 @@
 import AppKit
 import NotchiCore
+import NotchiNotch
 import SwiftUI
 
 @MainActor
@@ -7,7 +8,7 @@ final class SettingsWindowController {
     private let window: NSWindow
 
     init(app: AppDelegate) {
-        let view = SettingsView(themes: app.themes, hud: app.systemHUD, energy: EnergyModel(governor: app.energy, bus: app.bus),
+        let view = SettingsView(island: app.island, themes: app.themes, hud: app.systemHUD, energy: EnergyModel(governor: app.energy, bus: app.bus),
                                 coordinator: app.coordinator, setup: app.setup)
         window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "Notchi Settings"
@@ -48,6 +49,7 @@ final class EnergyModel {
 }
 
 struct SettingsView: View {
+    let island: NotchIslandController?
     let themes: ThemeEngine
     let hud: SystemHUD
     @Bindable var energy: EnergyModel
@@ -67,7 +69,7 @@ struct SettingsView: View {
                         Button("Allow…") { hud.requestPermission() }
                     }
                 }
-                LabeledContent("Island") { Text(DisplayManager.preferredScreen.map { DisplayManager.notch(on: $0).isHardware } == true ? "Hardware notch" : "Virtual island") }
+                IslandSettings(island: island)
                 LabeledContent("Version") { Text(Version.string) }
                 Text("Hover the notch to open it. Use the notchi command to send messages to it.")
                     .font(.callout).foregroundStyle(.secondary)
@@ -177,5 +179,24 @@ struct SettingsView: View {
         }
         .padding()
         .frame(width: 580, height: 470)
+    }
+}
+
+/// Where the island lives, and how it behaves on a screen without a notch.
+struct IslandSettings: View {
+    let island: NotchIslandController?
+    @AppStorage(DisplayManager.placementKey) private var placement = DisplayManager.Placement.automatic.rawValue
+    @AppStorage(NotchIslandController.hideIdleKey) private var hideIdle = false
+
+    private var onHardware: Bool { DisplayManager.preferredScreen.map { DisplayManager.notch(on: $0).isHardware } == true }
+
+    var body: some View {
+        Picker("Show the island on", selection: $placement) {
+            ForEach(DisplayManager.Placement.allCases, id: \.rawValue) { Text($0.label).tag($0.rawValue) }
+        }
+        .onChange(of: placement) { island?.settingsChanged() }
+        Toggle("On screens without a notch, hide the island until something happens", isOn: $hideIdle)
+            .onChange(of: hideIdle) { island?.settingsChanged() }
+        LabeledContent("Right now") { Text(onHardware ? "On the notch" : "A virtual island at the top of the screen") }
     }
 }

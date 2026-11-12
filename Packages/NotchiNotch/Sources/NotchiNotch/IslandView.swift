@@ -25,6 +25,7 @@ public struct IslandView: View {
                 .clipped()
         }
         .frame(width: s.width + 2 * ear, height: s.height)
+        .opacity(model.isIdleHidden ? 0 : 1)
         .modifier(ShelfDrop(model: model))
         .animation(model.spring, value: mode)
         .animation(model.spring, value: model.pages)

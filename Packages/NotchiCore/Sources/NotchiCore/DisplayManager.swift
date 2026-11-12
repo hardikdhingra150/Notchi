@@ -11,9 +11,40 @@ public enum DisplayManager {
         public var screenFrame: CGRect
     }
 
-    /// The screen to put the island on: the built-in notched screen when there is one, else the main screen.
-    public static var preferredScreen: NSScreen? {
-        NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.main
+    /// Which screen the island lives on (Settings > General).
+    public enum Placement: String, CaseIterable, Sendable {
+        /// the built-in notch when there is one, else the screen with the menu bar
+        case automatic
+        /// always the screen with the menu bar (set in System Settings > Displays)
+        case menuBar
+        /// whichever screen the pointer is on; it moves when you do
+        case pointer
+
+        public var label: String {
+            switch self {
+            case .automatic: "The notch, or the menu bar screen"
+            case .menuBar: "The screen with the menu bar"
+            case .pointer: "The screen with the pointer"
+            }
+        }
+    }
+
+    public static let placementKey = "islandScreen"
+    public static var placement: Placement {
+        get { UserDefaults.standard.string(forKey: placementKey).flatMap(Placement.init) ?? .automatic }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: placementKey) }
+    }
+
+    /// The screen to put the island on.
+    public static var preferredScreen: NSScreen? { screen(for: placement) }
+
+    public static func screen(for placement: Placement, pointer: CGPoint = NSEvent.mouseLocation) -> NSScreen? {
+        let menuBarScreen = NSScreen.screens.first   // macOS lists the menu bar screen first
+        switch placement {
+        case .automatic: return NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? menuBarScreen
+        case .menuBar: return menuBarScreen
+        case .pointer: return NSScreen.screens.first(where: { NSMouseInRect(pointer, $0.frame, false) }) ?? menuBarScreen
+        }
     }
 
     public static func notch(on screen: NSScreen) -> NotchGeometry {
