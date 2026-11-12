@@ -21,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusMenu: StatusMenu?
     private var settings: SettingsWindowController?
+    private var wallpapers: WallpaperBrowserController?
     private(set) var island: NotchIslandController?
     private var ipc: IPCServer?
     private var onboarding: OnboardingWindowController?
@@ -76,6 +77,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showOnboarding() {
         if onboarding == nil { onboarding = OnboardingWindowController(app: self) }
         onboarding?.show(bus: bus)
+    }
+
+    func showWallpapers() {
+        if wallpapers == nil { wallpapers = WallpaperBrowserController(app: self) }
+        wallpapers?.show()
     }
 
     func showSettings() {

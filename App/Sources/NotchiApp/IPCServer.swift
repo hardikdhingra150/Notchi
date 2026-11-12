@@ -62,6 +62,12 @@ final class IPCServer {
             answer(token) { try app.setup.restore(from: URL(fileURLWithPath: path)) }
         case .reset(let token):
             answer(token) { app.setup.resetToStock() }
+        case .open(let window):
+            switch window {
+            case "wallpapers": app.showWallpapers()
+            case "tour": app.showOnboarding()
+            default: app.showSettings()
+            }
         case .ping(let token):
             let np = app.nowPlaying.current.map { "\($0.title) · \($0.artist) (\($0.appName)\($0.isPlaying ? "" : ", paused"))" }
             IPC.reply(IPCReply(

@@ -47,7 +47,8 @@ final class StatusMenu: NSObject, NSMenuDelegate {
 
         let wpItem = NSMenuItem(title: "Live Wallpaper", action: nil, keyEquivalent: "")
         let wp = NSMenu()
-        wp.addItem(withTitle: "Choose Video…", action: #selector(chooseWallpaper), keyEquivalent: "").target = self
+        wp.addItem(withTitle: "Browse Wallpapers…", action: #selector(browseWallpapers), keyEquivalent: "w").target = self
+        wp.addItem(withTitle: "Choose Your Own Video…", action: #selector(chooseWallpaper), keyEquivalent: "").target = self
         let off = NSMenuItem(title: "Turn Off", action: #selector(wallpaperOff), keyEquivalent: "")
         off.target = self
         off.isEnabled = app.wallpaper.url != nil
@@ -118,6 +119,8 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     @objc private func backUp() { app.setup.backupPanel() }
     @objc private func restoreBackup() { app.setup.restorePanel() }
     @objc private func resetStock() { app.setup.confirmReset() }
+
+    @objc private func browseWallpapers() { app.showWallpapers() }
 
     @objc private func chooseWallpaper() {
         let panel = NSOpenPanel()

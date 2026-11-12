@@ -1,6 +1,7 @@
 import AppKit
 import NotchiCore
 import NotchiIcons
+import NotchiWallpaper
 
 // notchi: talk to the Notchi app from your terminal (blueprint section 12).
 
@@ -30,7 +31,10 @@ Usage:
   notchi backup [file]               save your whole setup in one file
   notchi restore <file>              bring a backup back
   notchi reset                       restore stock macOS (wallpaper, icons, volume)
-  notchi wallpaper set <video>       loop a video behind your desktop icons
+  notchi wallpaper browse            open the Wallpapers window
+  notchi wallpaper list              wallpapers in Notchi's library
+  notchi wallpaper get <id>          download one from the library and use it
+  notchi wallpaper set <video>       loop your own video behind your desktop icons
   notchi wallpaper off               go back to your normal wallpaper
   notchi icon set <path> [🚀|img.png] [--tint #hex|accent]
                                      give a folder or file a new icon
@@ -65,6 +69,14 @@ var isAppRunning: Bool {
         RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05))
     }
     return reply
+}
+
+/// Run async work from this synchronous tool and wait for it.
+func wait<T: Sendable>(_ work: @escaping @Sendable () async throws -> T) throws -> T {
+    nonisolated(unsafe) var result: Result<T, Error>?
+    Task { do { result = .success(try await work()) } catch { result = .failure(error) } }
+    while result == nil { RunLoop.current.run(mode: .default, before: Date().addingTimeInterval(0.05)) }
+    return try result!.get()
 }
 
 /// A path the app can use: absolute, with ~ expanded.
@@ -248,8 +260,39 @@ case "doctor":
     exit(problems == 0 ? 0 : 1)
 
 case "wallpaper":
-    requireApp()
     switch args.dropFirst().first {
+    case "list":
+        let lib = WallpaperLibrary()
+        let catalog: WallpaperLibrary.Catalog
+        do { catalog = try wait { try await lib.fetchCatalog() } } catch { fail("\(error)") }
+        for c in catalog.collections {
+            out("\n\(c.name)\(c.note.map { "  (\($0))" } ?? "")")
+            for w in catalog.wallpapers where w.collection == c.id {
+                out("  \(lib.isDownloaded(w) ? "↓" : " ") \(w.id.padding(toLength: 22, withPad: " ", startingAt: 0)) \(w.name)")
+            }
+        }
+        out("\nSet one: notchi wallpaper get <id>   (↓ = already downloaded)")
+    case "get":
+        guard args.count >= 3 else { fail("usage: notchi wallpaper get <id>   (see: notchi wallpaper list)") }
+        requireApp()
+        let lib = WallpaperLibrary()
+        let file: URL
+        do {
+            file = try wait {
+                let catalog = try await lib.fetchCatalog()
+                guard let item = catalog.wallpapers.first(where: { $0.id == args[2] }) else { throw WallpaperLibrary.LibraryError.unknown(args[2]) }
+                if !lib.isDownloaded(item) { out("Downloading \(item.name)…") }
+                return try await lib.download(item)
+            }
+        } catch { fail("\(error)") }
+        guard let r = request({ .wallpaper(path: file.path, replyTo: $0) }, timeout: 4) else { fail("Notchi didn't answer.") }
+        if r.ok { out("✓ \(r.message)") } else { fail(r.message) }
+    case "browse":
+        requireApp()
+        IPC.send(.open(window: "wallpapers"))
+        flush()
+    case "set", "off": requireApp(); fallthrough
+    default: switch args.dropFirst().first {
     case "set":
         guard args.count >= 3 else { fail("usage: notchi wallpaper set <video.mp4|mov>") }
         let path = URL(fileURLWithPath: (args[2] as NSString).expandingTildeInPath).standardizedFileURL.path
@@ -259,7 +302,8 @@ case "wallpaper":
         guard let r = request({ .wallpaper(path: nil, replyTo: $0) }) else { fail("Notchi didn't answer.") }
         out("✓ \(r.message)")
     default:
-        fail("usage: notchi wallpaper set <file>  |  notchi wallpaper off")
+        fail("usage: notchi wallpaper browse | list | get <id> | set <file> | off")
+    }
     }
 
 case "icon":

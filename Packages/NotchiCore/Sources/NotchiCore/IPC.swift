@@ -17,6 +17,8 @@ public enum IPCCommand: Codable, Equatable, Sendable {
     case restore(path: String, replyTo: String)
     /// "Restore stock macOS": wallpaper off, original icons back, macOS volume indicator back
     case reset(replyTo: String)
+    /// open one of the app's windows: "wallpapers", "settings", "tour"
+    case open(window: String)
 }
 
 public struct IPCReply: Codable, Equatable, Sendable {

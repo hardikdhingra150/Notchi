@@ -28,8 +28,9 @@ let package = Package(
             // Sparkle.framework is copied into Notchi.app/Contents/Frameworks by scripts/bundle.sh
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),
-        .executableTarget(name: "notchi", dependencies: ["NotchiCore", "NotchiIcons"], path: "CLI/notchi/Sources"),
+        .executableTarget(name: "notchi", dependencies: ["NotchiCore", "NotchiIcons", "NotchiWallpaper"], path: "CLI/notchi/Sources"),
         .testTarget(name: "NotchiCoreTests", dependencies: ["NotchiCore"], path: "Tests/NotchiCoreTests"),
         .testTarget(name: "NotchiIconsTests", dependencies: ["NotchiIcons"], path: "Tests/NotchiIconsTests"),
+        .testTarget(name: "NotchiWallpaperTests", dependencies: ["NotchiWallpaper"], path: "Tests/NotchiWallpaperTests"),
     ]
 )
