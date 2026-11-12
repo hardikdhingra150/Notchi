@@ -41,6 +41,22 @@ certificate, builds are signed ad hoc and people have to grant permissions again
 each update. 0.5.0-beta.1 was built without either, so people on it need to download the
 next version by hand once.
 
+## Homebrew
+
+`brew install --cask hardikdhingra150/tap/notchi` installs from
+[hardikdhingra150/homebrew-tap](https://github.com/hardikdhingra150/homebrew-tap). The cask is
+`packaging/homebrew/notchi.rb.template`; each release fills in the version and the `.dmg`
+checksum and pushes it to the tap. That step needs one more secret:
+
+1. GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token.
+   Repository access: only `homebrew-tap`. Permissions: Contents, read and write.
+2. In the Notchi repo: Settings → Secrets and variables → Actions → new secret
+   `HOMEBREW_TAP_TOKEN` with that token.
+
+Without it the release still works; the cask just stays on the previous version.
+Homebrew 7 asks people to trust third-party taps, so the install command on the site is
+`brew trust --cask hardikdhingra150/tap/notchi && brew install --cask hardikdhingra150/tap/notchi`.
+
 ## Betas and the update feed
 
 The app reads `releases/latest/download/appcast.xml`. GitHub's "latest" skips

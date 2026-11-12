@@ -13,6 +13,7 @@ env:
   # secrets can't be used in step `if:` directly
   HAS_CERT: ${{ secrets.NOTCHI_CERT_P12 != '' }}
   HAS_SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY != '' }}
+  HAS_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN != '' }}
 
 jobs:
   release:
@@ -98,3 +99,20 @@ jobs:
           FILES="dist/Notchi-$VERSION.dmg dist/Notchi-$VERSION.zip dist/notchi-cli-$VERSION.tar.gz dist/SHA256SUMS.txt"
           [[ -f dist/appcast.xml ]] && FILES="$FILES dist/appcast.xml"
           gh release create "$GITHUB_REF_NAME" $FILES --title "Notchi $VERSION" --generate-notes $FLAGS
+
+      # Homebrew: write the new version into github.com/hardikdhingra150/homebrew-tap.
+      # Needs a token that can push to that repo (see docs/RELEASING.md).
+      - name: Update Homebrew tap
+        if: env.HAS_TAP_TOKEN == 'true'
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          SHA=$(shasum -a 256 "dist/Notchi-$VERSION.dmg" | cut -d' ' -f1)
+          git clone --depth 1 "https://x-access-token:$TAP_TOKEN@github.com/hardikdhingra150/homebrew-tap.git" "$RUNNER_TEMP/tap"
+          mkdir -p "$RUNNER_TEMP/tap/Casks"
+          sed -e "s/VERSION/$VERSION/" -e "s/SHA256/$SHA/" packaging/homebrew/notchi.rb.template | sed '1,2d' > "$RUNNER_TEMP/tap/Casks/notchi.rb"
+          cd "$RUNNER_TEMP/tap"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/notchi.rb
+          git commit -m "notchi $VERSION" && git push || echo "Cask already up to date"

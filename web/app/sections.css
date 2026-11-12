@@ -321,6 +321,12 @@
 .th-dots { display: flex; gap: 10px; }
 .th-dots i { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--line); }
 .inst { display: flex; justify-content: center; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 54px; }
+.brew-row { margin-top: 22px; flex-direction: column; gap: 10px; }
+.brew-or { font: 700 11.5px/1 var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.brew-row .brew { max-width: min(100%, 760px); cursor: pointer; }
+.inst .brew code { background: none; border: 0; padding: 0; color: inherit; font: inherit; white-space: normal; overflow-wrap: anywhere; text-align: left; line-height: 1.45; }
+.brew-row .brew { border-radius: 24px; }
+.brew-btn { display: inline-flex; gap: 6px; align-items: center; }
 .brew { display: flex; align-items: center; gap: 14px; max-width: 100%; padding: 10px 10px 10px 22px; border: 3px solid var(--line); border-radius: 999px; background: #12110e; color: #ebe5d4; box-shadow: var(--lip); font: 400 15px/1 var(--f-mono); }
 .brew code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .brew-btn { flex: none; padding: 10px 14px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 700 12px/1 var(--f-ui); text-transform: uppercase; letter-spacing: .06em; overflow: hidden; }

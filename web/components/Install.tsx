@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "motion/react";
-import { APP_VERSION, DOWNLOAD_URL, RELEASES_URL } from "@/lib/site";
-import { Down } from "./icons";
+import { useState } from "react";
+import { APP_VERSION, BREW, DOWNLOAD_URL, RELEASES_URL } from "@/lib/site";
+import { Check, Copy, Down } from "./icons";
 import { Reveal, SectionHead } from "./ui";
 
 const loop = { repeat: Infinity, repeatDelay: 0.6 } as const;
@@ -44,10 +45,26 @@ function StepArt({ n }: { n: number }) {
 }
 
 const STEPS = [
-  { t: "Download", d: "Open the disk image and drag Notchi into your Applications folder." },
+  { t: "Download", d: "Open the disk image and drag Notchi into your Applications folder. Or install it with Homebrew." },
   { t: "Open Anyway", d: "Notchi isn't signed with a paid Apple certificate, so macOS asks once. System Settings → Privacy & Security → Open Anyway." },
   { t: "Pick a theme", d: "The notch wakes up and walks you through each module. Every permission is asked only when a feature needs it." },
 ];
+
+function BrewCmd() {
+  const [done, setDone] = useState(false);
+  const copy = () => {
+    navigator.clipboard?.writeText(BREW).catch(() => {});
+    setDone(true);
+    setTimeout(() => setDone(false), 1800);
+  };
+  return (
+    <button className="brew" onClick={copy} aria-label="Copy the Homebrew install command">
+      <span className="ps">$</span>
+      <code>{BREW}</code>
+      <span className="brew-btn">{done ? <><Check width={16} height={16} /> Copied</> : <><Copy width={16} height={16} /> Copy</>}</span>
+    </button>
+  );
+}
 
 export default function Install() {
   return (
@@ -70,6 +87,10 @@ export default function Install() {
         <Reveal className="inst" delay={0.1}>
           <a className="pill hot" href={DOWNLOAD_URL}><Down /> Download Notchi {APP_VERSION}</a>
           <a className="pill" href={RELEASES_URL} target="_blank" rel="noreferrer">All releases</a>
+        </Reveal>
+        <Reveal className="inst brew-row" delay={0.15}>
+          <span className="brew-or">or with Homebrew</span>
+          <BrewCmd />
         </Reveal>
       </div>
     </section>

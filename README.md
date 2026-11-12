@@ -97,6 +97,16 @@ Settings → Energy shows the current speed and the reason.
 | `Themes/` | Built-in themes |
 | `PROJECT_BLUEPRINT.md` | The full product plan |
 
+## Install
+
+Download the `.dmg` from the [latest release](https://github.com/hardikdhingra150/Notchi/releases/latest), or use Homebrew:
+
+```bash
+brew trust --cask hardikdhingra150/tap/notchi && brew install --cask hardikdhingra150/tap/notchi
+```
+
+The first time you open it, macOS asks once: System Settings → Privacy & Security → Open Anyway.
+
 ## Build and run the app
 
 macOS 14+ and Swift 6 (Xcode or just the Command Line Tools).
