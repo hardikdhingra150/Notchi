@@ -62,6 +62,26 @@ final class IPCServer {
             answer(token) { try app.setup.restore(from: URL(fileURLWithPath: path)) }
         case .reset(let token):
             answer(token) { app.setup.resetToStock() }
+        case .profile(let action, let name, let token):
+            let store = app.setup.profiles
+            answer(token) {
+                switch action {
+                case "save":
+                    let p = try store.save(name: name ?? "")
+                    UserDefaults.standard.set(p.name, forKey: SetupManager.profileKey)
+                    return "Saved profile \(p.name). Switch to it: notchi profile \(p.name)"
+                case "use":
+                    return "Switched to \(try app.setup.useProfile(name ?? "").name)"
+                case "remove":
+                    try store.remove(name ?? "")
+                    return "Removed profile \(name ?? "")"
+                default:
+                    let all = store.load()
+                    if all.isEmpty { return "No profiles yet. Save this setup: notchi profile save \"Work\"" }
+                    let active = app.setup.activeProfile.map(ProfileStore.key)
+                    return all.map { "\($0.id == active ? "●" : " ") \($0.name)" }.joined(separator: "\n")
+                }
+            }
         case .open(let window):
             switch window {
             case "wallpapers": app.showWallpapers()

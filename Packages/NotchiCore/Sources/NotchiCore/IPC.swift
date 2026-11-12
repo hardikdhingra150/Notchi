@@ -19,6 +19,8 @@ public enum IPCCommand: Codable, Equatable, Sendable {
     case reset(replyTo: String)
     /// open one of the app's windows: "wallpapers", "settings", "tour"
     case open(window: String)
+    /// action: "list", "save", "use" or "remove"
+    case profile(action: String, name: String?, replyTo: String)
 }
 
 public struct IPCReply: Codable, Equatable, Sendable {

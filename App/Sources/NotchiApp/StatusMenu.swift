@@ -45,6 +45,34 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         themeItem.submenu = sub
         menu.addItem(themeItem)
 
+        let profItem = NSMenuItem(title: "Profile", action: nil, keyEquivalent: "")
+        let prof = NSMenu()
+        let saved = app.setup.profiles.load()
+        let active = app.setup.activeProfile.map(ProfileStore.key)
+        for p in saved {
+            let mi = NSMenuItem(title: p.name, action: #selector(pickProfile(_:)), keyEquivalent: "")
+            mi.target = self
+            mi.representedObject = p.name
+            mi.state = p.id == active ? .on : .off
+            prof.addItem(mi)
+        }
+        if !saved.isEmpty { prof.addItem(.separator()) }
+        prof.addItem(withTitle: "Save Current Setup as Profile…", action: #selector(saveProfile), keyEquivalent: "").target = self
+        if !saved.isEmpty {
+            let rm = NSMenuItem(title: "Remove", action: nil, keyEquivalent: "")
+            let rmMenu = NSMenu()
+            for p in saved {
+                let mi = NSMenuItem(title: p.name, action: #selector(removeProfile(_:)), keyEquivalent: "")
+                mi.target = self
+                mi.representedObject = p.name
+                rmMenu.addItem(mi)
+            }
+            rm.submenu = rmMenu
+            prof.addItem(rm)
+        }
+        profItem.submenu = prof
+        menu.addItem(profItem)
+
         let wpItem = NSMenuItem(title: "Live Wallpaper", action: nil, keyEquivalent: "")
         let wp = NSMenu()
         wp.addItem(withTitle: "Browse Wallpapers…", action: #selector(browseWallpapers), keyEquivalent: "w").target = self
@@ -121,6 +149,18 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     @objc private func resetStock() { app.setup.confirmReset() }
 
     @objc private func browseWallpapers() { app.showWallpapers() }
+    @objc private func pickProfile(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+        do { try app.setup.useProfile(name) } catch {
+            let a = NSAlert(); a.messageText = "Couldn't switch profile"; a.informativeText = "\(error)"; a.runModal()
+        }
+    }
+    @objc private func saveProfile() { app.setup.saveProfilePanel() }
+    @objc private func removeProfile(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+        try? app.setup.profiles.remove(name)
+        if app.setup.activeProfile.map(ProfileStore.key) == ProfileStore.key(name) { UserDefaults.standard.removeObject(forKey: SetupManager.profileKey) }
+    }
 
     @objc private func chooseWallpaper() {
         let panel = NSOpenPanel()

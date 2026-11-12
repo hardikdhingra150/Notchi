@@ -78,14 +78,8 @@ public enum SetupBackup {
         return (e, d)
     }
 
-    /// Write a backup of everything under `support` plus the settings in `defaults`.
-    @discardableResult
-    public static func create(to file: URL, defaults: UserDefaults = .standard, support: URL = supportURL,
-                              appVersion: String = "dev", now: Date = Date()) throws -> Manifest {
-        let fm = FileManager.default
-        let stage = try Archive.scratch("backup")
-        defer { try? fm.removeItem(at: stage) }
-
+    /// Every Notchi setting that is set in `defaults` right now.
+    public static func currentSettings(_ defaults: UserDefaults = .standard) -> [String: Value] {
         var values: [String: Value] = [:]
         for (key, kind) in settings {
             guard let raw = defaults.object(forKey: key) else { continue }
@@ -95,6 +89,30 @@ public enum SetupBackup {
             case .string: if let s = raw as? String { values[key] = .string(s) }
             }
         }
+        return values
+    }
+
+    /// Put settings into `defaults`. Settings that aren't in `values` go back to their defaults.
+    public static func write(_ values: [String: Value], to defaults: UserDefaults = .standard) {
+        for (key, _) in settings {
+            switch values[key] {
+            case .bool(let b): defaults.set(b, forKey: key)
+            case .int(let i): defaults.set(i, forKey: key)
+            case .string(let s): defaults.set(s, forKey: key)
+            case nil: defaults.removeObject(forKey: key)
+            }
+        }
+    }
+
+    /// Write a backup of everything under `support` plus the settings in `defaults`.
+    @discardableResult
+    public static func create(to file: URL, defaults: UserDefaults = .standard, support: URL = supportURL,
+                              appVersion: String = "dev", now: Date = Date()) throws -> Manifest {
+        let fm = FileManager.default
+        let stage = try Archive.scratch("backup")
+        defer { try? fm.removeItem(at: stage) }
+
+        let values = currentSettings(defaults)
 
         var themeCount = 0
         let themes = support.appendingPathComponent("Themes", isDirectory: true)
@@ -180,14 +198,7 @@ public enum SetupBackup {
                 values["wallpaperVideo"] = .string(to.path)
             }
         }
-        for (key, _) in settings {
-            switch values[key] {
-            case .bool(let b): defaults.set(b, forKey: key)
-            case .int(let i): defaults.set(i, forKey: key)
-            case .string(let s): defaults.set(s, forKey: key)
-            case nil: defaults.removeObject(forKey: key)
-            }
-        }
+        write(values, to: defaults)
         return m
     }
 

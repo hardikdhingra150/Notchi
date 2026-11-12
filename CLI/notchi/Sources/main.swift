@@ -28,6 +28,9 @@ Usage:
   notchi theme new <id> ["Name"]     start your own theme from the active one
   notchi theme validate <file>       check a theme file without installing it
   notchi export [file]               save the active theme as a .notchitheme
+  notchi profile save <name>         remember this setup (theme, wallpaper, energy, island)
+  notchi profile <name>              switch to a saved profile
+  notchi profile list | remove <name>
   notchi backup [file]               save your whole setup in one file
   notchi restore <file>              bring a backup back
   notchi reset                       restore stock macOS (wallpaper, icons, volume)
@@ -48,7 +51,7 @@ Examples:
   npm run build && notchi notify "Build done ✅" || notchi notify "Build failed ❌"
   notchi progress 42 "Exporting"
 
-Coming in later versions: profile.
+
 """
 
 var isAppRunning: Bool {
@@ -351,8 +354,23 @@ case "icon":
         fail("usage: notchi icon set|restore|list|preview (see notchi help)")
     }
 
-case "profile":
-    fail("`\(args[0])` is coming in a later version. Follow along: https://github.com/hardikdhingra150/Notchi")
+case "profile", "profiles":
+    requireApp()
+    let sub = args.count >= 2 ? args[1] : "list"
+    let rest = args.dropFirst(2).joined(separator: " ")
+    switch sub {
+    case "list":
+        say(request({ .profile(action: "list", name: nil, replyTo: $0) }))
+    case "save":
+        guard !rest.isEmpty else { fail("usage: notchi profile save <name>") }
+        say(request({ .profile(action: "save", name: rest, replyTo: $0) }))
+    case "remove", "rm":
+        guard !rest.isEmpty else { fail("usage: notchi profile remove <name>") }
+        say(request({ .profile(action: "remove", name: rest, replyTo: $0) }))
+    default:
+        // notchi profile Work (names can have spaces)
+        say(request({ .profile(action: "use", name: args.dropFirst().joined(separator: " "), replyTo: $0) }, timeout: 4))
+    }
 
 default:
     fail("unknown command \"\(args[0])\". Try: notchi help")

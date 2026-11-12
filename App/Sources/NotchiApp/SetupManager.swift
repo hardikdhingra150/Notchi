@@ -35,19 +35,61 @@ final class SetupManager {
         _ = studio.restoreAll()
         try SetupBackup.restore(from: file)
 
-        app.themes.reload()
-        app.energy.reloadRules()
-        app.coordinator.reloadSettings()
-        app.coordinator.quiet = true
-        app.themes.apply(app.themes.active)     // the notch picks up the restored theme
-        app.coordinator.quiet = false
-        app.coordinator.syncWallpaper(animated: true)
-        if app.systemHUD.isEnabled { app.systemHUD.start() } else { app.systemHUD.setEnabled(false) }
+        reloadFromSettings()
         let icons = studio.reapplyAll()
 
         var parts = ["theme \(app.themes.active.name)", "\(m.themeCount) installed theme\(m.themeCount == 1 ? "" : "s")", "\(icons) icon\(icons == 1 ? "" : "s")"]
         if app.wallpaper.url != nil { parts.append("wallpaper") }
         return "Restored: " + parts.joined(separator: ", ") + (safety.map { ". Your previous setup is saved in \($0.deletingLastPathComponent().path)" } ?? "")
+    }
+
+    /// After settings were rewritten (a restore or a profile): every module picks them up.
+    func reloadFromSettings() {
+        app.themes.reload()
+        app.energy.reloadRules()
+        app.coordinator.reloadSettings()
+        app.coordinator.quiet = true
+        app.themes.apply(app.themes.active)     // the notch picks up the theme
+        app.coordinator.quiet = false
+        app.coordinator.syncWallpaper(animated: true)
+        if app.systemHUD.isEnabled { app.systemHUD.start() } else { app.systemHUD.setEnabled(false) }
+        app.island?.settingsChanged()
+    }
+
+    // MARK: Profiles
+
+    let profiles = ProfileStore()
+
+    @discardableResult
+    func useProfile(_ name: String) throws -> ProfileStore.Profile {
+        let p = try profiles.apply(name)
+        reloadFromSettings()
+        UserDefaults.standard.set(p.name, forKey: Self.profileKey)
+        app.bus.post(.notify(message: "Profile: \(p.name)"))
+        return p
+    }
+
+    static let profileKey = "activeProfile"
+    var activeProfile: String? { UserDefaults.standard.string(forKey: Self.profileKey) }
+
+    func saveProfilePanel() {
+        NSApp.activate(ignoringOtherApps: true)
+        let a = NSAlert()
+        a.messageText = "Save this setup as a profile"
+        a.informativeText = "A profile remembers your theme, wallpaper, energy and island settings, so you can switch back in one click."
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        field.placeholderString = "Work, Night, Presenting…"
+        field.stringValue = activeProfile ?? ""
+        a.accessoryView = field
+        a.addButton(withTitle: "Save")
+        a.addButton(withTitle: "Cancel")
+        a.window.initialFirstResponder = field
+        guard a.runModal() == .alertFirstButtonReturn else { return }
+        do {
+            let p = try profiles.save(name: field.stringValue)
+            UserDefaults.standard.set(p.name, forKey: Self.profileKey)
+            app.bus.post(.notify(message: "Saved profile \(p.name)"))
+        } catch { alert("Couldn't save the profile", error) }
     }
 
     /// Everything Notchi changed outside itself goes back: the wallpaper, the icons and the
