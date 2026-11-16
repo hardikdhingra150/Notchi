@@ -47,6 +47,9 @@ public enum DisplayManager {
         }
     }
 
+    /// The virtual island's closed size, in points.
+    public static let virtualSize = CGSize(width: 190, height: 24)
+
     public static func notch(on screen: NSScreen) -> NotchGeometry {
         let f = screen.frame
         let top = screen.safeAreaInsets.top
@@ -56,10 +59,10 @@ public enum DisplayManager {
             let w = f.width - left.width - right.width
             return NotchGeometry(rect: CGRect(x: x, y: f.maxY - top, width: w, height: top), isHardware: true, screenFrame: f)
         }
-        // virtual island: same proportions as a 14" MacBook notch, hanging from the top
-        let menuBar = f.maxY - screen.visibleFrame.maxY
-        let h = max(menuBar, 24)
-        let w: CGFloat = 190
+        // virtual island: one fixed size, hanging from the top. It used to follow the menu bar's
+        // height, so it came out taller or shorter depending on whether a full-screen app had
+        // hidden the menu bar when Notchi last measured the screen.
+        let w = virtualSize.width, h = virtualSize.height
         return NotchGeometry(rect: CGRect(x: f.midX - w / 2, y: f.maxY - h, width: w, height: h), isHardware: false, screenFrame: f)
     }
 }
