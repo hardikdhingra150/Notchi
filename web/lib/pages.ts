@@ -33,8 +33,8 @@ export const PAGES = [
   {
     href: "/roadmap", no: "06", title: "Roadmap", short: "Roadmap",
     line: "What's shipped, what's next, and the rest of the suite that's on its way. Every phase ships free.",
-    card: "The notch and themes are built. Sidebar, dock and plugins are next.",
-    items: ["v0.5 beta is out", "v1.0 sidebar next", "9 modules"],
+    card: "The notch, themes and the glass sidebar are built. Dock and plugins are next.",
+    items: ["v0.5 beta is out", "Sidebar is in", "9 modules"],
   },
 ] as const;
 
