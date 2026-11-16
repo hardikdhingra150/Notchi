@@ -30,8 +30,15 @@ public final class IslandModel {
     public var isHardwareNotch = true
     /// On a screen without a notch: keep the island out of sight until something happens.
     public var hideIdleVirtual = false
+    /// A full-screen app fills this notch-less screen: the island stays out of its way.
+    public var stepsAside = false
     /// The closed island is invisible (it still opens when you hover where it is).
-    public var isIdleHidden: Bool { !isHardwareNotch && hideIdleVirtual && mode == .closed }
+    /// In a full-screen app it also hides while music plays, so it never covers tabs or toolbars.
+    public var isIdleHidden: Bool {
+        guard !isHardwareNotch else { return false }
+        if stepsAside { return mode == .closed || mode == .compact }
+        return hideIdleVirtual && mode == .closed
+    }
 
     public var hovering = false
     public var activity: IslandActivity?

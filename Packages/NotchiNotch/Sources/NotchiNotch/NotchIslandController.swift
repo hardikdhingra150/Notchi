@@ -54,6 +54,16 @@ public final class NotchIslandController {
         applyTheme(themes.active)
         applyEnergy(energy.budget)
         model.hideIdleVirtual = UserDefaults.standard.bool(forKey: Self.hideIdleKey)
+        let ws = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.activeSpaceDidChangeNotification, NSWorkspace.didActivateApplicationNotification] {
+            spaceObservers.append(ws.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                // the space animation finishes a moment after the notification
+                MainActor.assumeIsolated {
+                    self?.updateStepAside()
+                    Task { @MainActor [weak self] in try? await Task.sleep(for: .milliseconds(700)); self?.updateStepAside() }
+                }
+            })
+        }
         let p = IslandPanel(frame: .zero)
         let host = FirstClickHostingView(rootView: IslandView(model: model))
         host.frame = NSRect(origin: .zero, size: Self.canvas)
@@ -85,11 +95,53 @@ public final class NotchIslandController {
     }
 
     public static let hideIdleKey = "hideIdleVirtualIsland"
+    /// On screens without a notch, keep out of full-screen apps. On unless turned off.
+    public static let stepAsideKey = "islandStepsAsideInFullScreen"
+    static var stepAsideEnabled: Bool { UserDefaults.standard.object(forKey: stepAsideKey) as? Bool ?? true }
+    /// How long the pointer rests on a virtual island before it opens. A hardware notch
+    /// has nothing under it, so it opens at once; a virtual one covers tabs and toolbars.
+    static let virtualOpenDelay: TimeInterval = 0.35
+    private var hoverSince: Date?
+    private var openTask: Task<Void, Never>?
+    private var spaceObservers: [NSObjectProtocol] = []
+
+    /// True when the frontmost app has a window covering the whole of this screen.
+    static func fullScreenApp(on screen: NSScreen) -> Bool {
+        guard let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier,
+              let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return false }
+        // window bounds use top-left origin on the main display
+        let main = NSScreen.screens.first?.frame ?? screen.frame
+        let f = screen.frame
+        let target = CGRect(x: f.minX, y: main.maxY - f.maxY, width: f.width, height: f.height)
+        return list.contains { w in
+            guard (w[kCGWindowOwnerPID as String] as? pid_t) == pid, (w[kCGWindowLayer as String] as? Int) == 0,
+                  let b = w[kCGWindowBounds as String] as? [String: CGFloat] else { return false }
+            let r = CGRect(x: b["X"] ?? 0, y: b["Y"] ?? 0, width: b["Width"] ?? 0, height: b["Height"] ?? 0)
+            return abs(r.minX - target.minX) < 2 && abs(r.minY - target.minY) < 2 && r.width >= target.width - 2 && r.height >= target.height - 2
+        }
+    }
+
+    /// Work out again whether to step aside (app switched, space changed, settings changed).
+    func updateStepAside() {
+        guard let screen = DisplayManager.preferredScreen else { return }
+        let aside = Self.stepAsideEnabled && !model.isHardwareNotch && Self.fullScreenApp(on: screen)
+        if aside != model.stepsAside {
+            withAnimation(model.spring) { model.stepsAside = aside }
+            if aside, model.hovering { closeNow() }
+        }
+    }
+
+    private func closeNow() {
+        withAnimation(model.spring) { model.hovering = false }
+        model.resetPage()
+        panel?.ignoresMouseEvents = true
+    }
 
     /// Read the island settings again and move it if needed (Settings calls this).
     public func settingsChanged() {
         model.hideIdleVirtual = UserDefaults.standard.bool(forKey: Self.hideIdleKey)
         layout()
+        updateStepAside()
     }
 
     private var screenID: CGDirectDisplayID?
@@ -103,6 +155,7 @@ public final class NotchIslandController {
         model.isHardwareNotch = g.isHardware
         let c = Self.canvas
         panel.setFrame(NSRect(x: g.rect.midX - c.width / 2, y: g.screenFrame.maxY - c.height, width: c.width, height: c.height), display: true)
+        updateStepAside()
     }
 
     /// The island's current rect in screen coordinates.
@@ -151,11 +204,31 @@ public final class NotchIslandController {
             // a cancelled task must be cleared too, or the island can never close again
             leaveTask?.cancel()
             leaveTask = nil
-            if isDraggingFiles { model.go(to: .shelf) } else { model.interacted() }
-            if !model.hovering {
-                withAnimation(model.spring) { model.hovering = true }
-                panel?.ignoresMouseEvents = false
+            if model.hovering {
+                if isDraggingFiles { model.go(to: .shelf) } else { model.interacted() }
+                return
             }
+            // files dragged over the notch always open it: that's how the shelf works
+            if isDraggingFiles { openTask?.cancel(); openNow(); model.go(to: .shelf); return }
+            // in a full-screen app the island stays out of the way
+            if model.stepsAside { return }
+            // a hardware notch opens at once; a virtual island waits, and never opens mid-click
+            if model.isHardwareNotch { openNow(); return }
+            if NSEvent.pressedMouseButtons != 0 { hoverSince = nil; openTask?.cancel(); return }
+            if hoverSince == nil {
+                hoverSince = Date()
+                openTask?.cancel()
+                openTask = Task { [weak self] in
+                    try? await Task.sleep(for: .seconds(Self.virtualOpenDelay))
+                    guard let self, !Task.isCancelled, self.hoverSince != nil,
+                          NSEvent.pressedMouseButtons == 0,
+                          self.islandRect.insetBy(dx: -10, dy: -10).contains(NSEvent.mouseLocation) else { return }
+                    self.openNow()
+                }
+            }
+        } else if !model.hovering {
+            hoverSince = nil
+            openTask?.cancel()
         } else if model.hovering, leaveTask == nil {
             // small grace period so the island doesn't flicker at its edge
             leaveTask = Task { [weak self] in
@@ -169,6 +242,14 @@ public final class NotchIslandController {
                 }
             }
         }
+    }
+
+    private func openNow() {
+        hoverSince = nil
+        guard !model.hovering else { return }
+        model.interacted()
+        withAnimation(model.spring) { model.hovering = true }
+        panel?.ignoresMouseEvents = false
     }
 
     private func handle(_ e: NotchiEvent) {

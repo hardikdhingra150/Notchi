@@ -42,7 +42,7 @@ public enum SetupBackup {
     static let settings: [(key: String, kind: Kind)] = [
         ("activeTheme", .string), ("wallpaperVideo", .string), ("wallpaperSource", .string),
         ("replaceSystemHUD", .bool), ("batteryFPS", .int), ("pauseWhenBatteryLow", .bool),
-        ("themeSetsWallpaper", .bool), ("themeTintsIcons", .bool), ("islandScreen", .string), ("hideIdleVirtualIsland", .bool),
+        ("themeSetsWallpaper", .bool), ("themeTintsIcons", .bool), ("islandScreen", .string), ("hideIdleVirtualIsland", .bool), ("islandStepsAsideInFullScreen", .bool),
         ("sidebarWidgets", .string), ("sidebarEdge", .string), ("sidebarHotEdge", .bool),
     ]
 

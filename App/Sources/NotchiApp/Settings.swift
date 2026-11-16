@@ -192,6 +192,7 @@ struct IslandSettings: View {
     let island: NotchIslandController?
     @AppStorage(DisplayManager.placementKey) private var placement = DisplayManager.Placement.automatic.rawValue
     @AppStorage(NotchIslandController.hideIdleKey) private var hideIdle = false
+    @AppStorage(NotchIslandController.stepAsideKey) private var stepAside = true
 
     private var onHardware: Bool { DisplayManager.preferredScreen.map { DisplayManager.notch(on: $0).isHardware } == true }
 
@@ -202,6 +203,8 @@ struct IslandSettings: View {
         .onChange(of: placement) { island?.settingsChanged() }
         Toggle("On screens without a notch, hide the island until something happens", isOn: $hideIdle)
             .onChange(of: hideIdle) { island?.settingsChanged() }
+        Toggle("On screens without a notch, keep out of full-screen apps", isOn: $stepAside)
+            .onChange(of: stepAside) { island?.settingsChanged() }
         LabeledContent("Right now") { Text(onHardware ? "On the notch" : "A virtual island at the top of the screen") }
     }
 }
