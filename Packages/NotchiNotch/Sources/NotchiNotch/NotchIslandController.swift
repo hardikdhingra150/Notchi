@@ -88,6 +88,11 @@ public final class NotchIslandController {
             MainActor.assumeIsolated { self.swiped(dx: dx, dy: dy, phase: phase, momentum: momentum) }
             return e
         }) { monitors.append(sw) }
+        // over another app (pass-through mode): watch for a swipe down; the app still gets the scroll
+        if let gs = NSEvent.addGlobalMonitorForEvents(matching: [.scrollWheel], handler: { e in
+            let dy = e.scrollingDeltaY, inv = e.isDirectionInvertedFromDevice, phase = e.phase
+            MainActor.assumeIsolated { self.scrolled(dy: dy, inverted: inv, phase: phase) }
+        }) { monitors.append(gs) }
 
         bus.events.receive(on: RunLoop.main).sink { [weak self] e in
             MainActor.assumeIsolated { self?.handle(e) }
@@ -95,9 +100,18 @@ public final class NotchIslandController {
     }
 
     public static let hideIdleKey = "hideIdleVirtualIsland"
-    /// On screens without a notch, keep out of full-screen apps. On unless turned off.
-    public static let stepAsideKey = "islandStepsAsideInFullScreen"
-    static var stepAsideEnabled: Bool { UserDefaults.standard.object(forKey: stepAsideKey) as? Bool ?? true }
+    /// What the island does in full-screen apps on a screen without a notch (IslandModel.Aside).
+    public static let fullScreenKey = "islandFullScreen"
+    /// beta 8 kept a yes/no under this name; "no" meant behave as usual
+    static let oldStepAsideKey = "islandStepsAsideInFullScreen"
+    public static var fullScreenStyle: IslandModel.Aside {
+        let d = UserDefaults.standard
+        if let s = d.string(forKey: fullScreenKey).flatMap(IslandModel.Aside.init) { return s }
+        if d.object(forKey: oldStepAsideKey) as? Bool == false { return .normal }
+        return .passThrough
+    }
+    private var peekPoll: Task<Void, Never>?
+    private var swipeDown: CGFloat = 0
     /// How long the pointer rests on a virtual island before it opens. A hardware notch
     /// has nothing under it, so it opens at once; a virtual one covers tabs and toolbars.
     static let virtualOpenDelay: TimeInterval = 0.35
@@ -121,14 +135,50 @@ public final class NotchIslandController {
         }
     }
 
-    /// Work out again whether to step aside (app switched, space changed, settings changed).
+    /// Work out again whether a full-screen app is in front (app switched, space changed, settings changed).
     func updateStepAside() {
         guard let screen = DisplayManager.preferredScreen else { return }
-        let aside = Self.stepAsideEnabled && !model.isHardwareNotch && Self.fullScreenApp(on: screen)
-        if aside != model.stepsAside {
-            withAnimation(model.spring) { model.stepsAside = aside }
-            if aside, model.hovering { closeNow() }
+        let full = !model.isHardwareNotch && Self.fullScreenApp(on: screen)
+        let aside: IslandModel.Aside = full ? Self.fullScreenStyle : .normal
+        if aside != model.aside {
+            withAnimation(model.spring) { model.aside = aside }
+            if aside != .normal, model.hovering { closeNow() }
+            if aside != .passThrough { stopPeeking() }
         }
+    }
+
+    // MARK: Pass-through (full-screen apps on screens without a notch)
+
+    /// The pointer is over a pass-through island: fade it, and open only if you ask.
+    private func peek() {
+        if !model.peeking { model.peeking = true }
+        if NSEvent.modifierFlags.contains(.option) { stopPeeking(); openNow(); return }
+        // holding ⌥ without moving the pointer should open it too
+        guard peekPoll == nil else { return }
+        peekPoll = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(90))
+                guard let self, self.model.peeking else { return }
+                if NSEvent.modifierFlags.contains(.option) { self.stopPeeking(); self.openNow(); return }
+            }
+        }
+    }
+
+    private func stopPeeking() {
+        peekPoll?.cancel()
+        peekPoll = nil
+        swipeDown = 0
+        if model.peeking { model.peeking = false }
+    }
+
+    /// A two-finger swipe down over a pass-through island opens it.
+    private func scrolled(dy: CGFloat, inverted: Bool, phase: NSEvent.Phase) {
+        guard model.peeking, !model.hovering else { return }
+        if phase.contains(.began) { swipeDown = 0 }
+        // with natural scrolling, fingers moving down give a positive delta
+        swipeDown += inverted ? dy : -dy
+        if swipeDown > 28 { stopPeeking(); openNow() }
+        if phase.contains(.ended) || phase.contains(.cancelled) { swipeDown = 0 }
     }
 
     private func closeNow() {
@@ -211,7 +261,11 @@ public final class NotchIslandController {
             // files dragged over the notch always open it: that's how the shelf works
             if isDraggingFiles { openTask?.cancel(); openNow(); model.go(to: .shelf); return }
             // in a full-screen app the island stays out of the way
-            if model.stepsAside { return }
+            switch model.aside {
+            case .hidden: return
+            case .passThrough: peek(); return
+            case .normal: break
+            }
             // a hardware notch opens at once; a virtual island waits, and never opens mid-click
             if model.isHardwareNotch { openNow(); return }
             if NSEvent.pressedMouseButtons != 0 { hoverSince = nil; openTask?.cancel(); return }
@@ -229,6 +283,7 @@ public final class NotchIslandController {
         } else if !model.hovering {
             hoverSince = nil
             openTask?.cancel()
+            stopPeeking()
         } else if model.hovering, leaveTask == nil {
             // small grace period so the island doesn't flicker at its edge
             leaveTask = Task { [weak self] in
