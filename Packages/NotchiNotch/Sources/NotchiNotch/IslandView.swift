@@ -26,7 +26,6 @@ public struct IslandView: View {
         }
         .frame(width: s.width + 2 * ear, height: s.height)
         .opacity(model.islandOpacity)
-        .animation(.easeOut(duration: 0.18), value: model.peeking)
         .modifier(ShelfDrop(model: model))
         .animation(model.spring, value: mode)
         .animation(model.spring, value: model.pages)

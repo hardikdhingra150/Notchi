@@ -95,7 +95,7 @@ final class IPCServer {
             let np = app.nowPlaying.current.map { "\($0.title) · \($0.artist) (\($0.appName)\($0.isPlaying ? "" : ", paused"))" }
             IPC.reply(IPCReply(
                 ok: true, message: "pong", themes: app.themes.themes.map(\.id), activeTheme: app.themes.active.id,
-                version: Version.string, island: app.island.map { ($0.model.mode == .expanded ? "expanded (\($0.model.currentPage))" : "\($0.model.mode)") + ($0.model.aside == .passThrough ? ", see-through over a full-screen app" : $0.model.aside == .hidden ? ", hidden over a full-screen app" : "") }, nowPlaying: np,
+                version: Version.string, island: app.island.map { ($0.model.mode == .expanded ? "expanded (\($0.model.currentPage))" : "\($0.model.mode)") + ($0.model.aside == .passThrough ? ", over a full-screen app (opens from the top edge)" : $0.model.aside == .hidden ? ", hidden over a full-screen app" : "") }, nowPlaying: np,
                 hardwareNotch: app.island?.model.isHardwareNotch,
                 wallpaper: app.wallpaper.url.map { "\($0.path) (\(app.wallpaper.pauseReason.map { "paused: \($0)" } ?? "playing"))" },
                 accent: app.themes.active.accent.description, systemHUD: app.systemHUD.state.rawValue, adHocSigned: SystemHUD.isAdHocSigned), to: token)

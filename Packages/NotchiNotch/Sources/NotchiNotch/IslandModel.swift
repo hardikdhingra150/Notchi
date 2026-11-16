@@ -32,7 +32,7 @@ public final class IslandModel {
     public var hideIdleVirtual = false
     /// How the island behaves while a full-screen app fills a screen without a notch.
     public enum Aside: String, Sendable, CaseIterable {
-        /// visible, clicks go through it, fades when you point at it; ⌥ or a swipe down opens it
+        /// looks as usual and clicks go through it; it opens when the pointer reaches the top edge
         case passThrough
         /// hidden while idle or playing; messages still show
         case hidden
@@ -41,15 +41,13 @@ public final class IslandModel {
     }
     /// Set while a full-screen app is in front on this screen; .normal otherwise.
     public var aside: Aside = .normal
-    /// The pointer is over a pass-through island: it fades so you can see what's under it.
-    public var peeking = false
     /// The closed island is invisible (it still opens when you hover where it is).
     public var isIdleHidden: Bool {
         guard !isHardwareNotch else { return false }
         if aside == .hidden { return mode == .closed || mode == .compact }
         return hideIdleVirtual && mode == .closed
     }
-    var islandOpacity: Double { isIdleHidden ? 0 : peeking && !hovering ? 0.2 : 1 }
+    var islandOpacity: Double { isIdleHidden ? 0 : 1 }
 
     public var hovering = false
     public var activity: IslandActivity?

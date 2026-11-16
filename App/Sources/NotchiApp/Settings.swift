@@ -204,13 +204,13 @@ struct IslandSettings: View {
         Toggle("On screens without a notch, hide the island until something happens", isOn: $hideIdle)
             .onChange(of: hideIdle) { island?.settingsChanged() }
         Picker("In full-screen apps (screens without a notch)", selection: $fullScreen) {
-            Text("Stay visible, let clicks through").tag(IslandModel.Aside.passThrough.rawValue)
+            Text("Stay visible, open from the top edge").tag(IslandModel.Aside.passThrough.rawValue)
             Text("Hide until something happens").tag(IslandModel.Aside.hidden.rawValue)
             Text("Open on hover, as usual").tag(IslandModel.Aside.normal.rawValue)
         }
         .onChange(of: fullScreen) { island?.settingsChanged() }
         if fullScreen == IslandModel.Aside.passThrough.rawValue {
-            Text("Clicks reach the tab or button under the island, and it fades when you point at it. To open it, hold ⌥ while pointing at it, or swipe down on it with two fingers.")
+            Text("Clicks reach the tab or button under the island. To open it, push the pointer to the very top of the screen above it, the way you'd show the menu bar in a full-screen app.")
                 .font(.callout).foregroundStyle(.secondary)
         }
         LabeledContent("Right now") { Text(onHardware ? "On the notch" : "A virtual island at the top of the screen") }
