@@ -8,7 +8,7 @@ export const RELEASES: Release[] = [
     label: "Themes",
     date: "2026-11-10",
     status: "released",
-    summary: "Out now as a public beta (0.5.0-beta.10). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
+    summary: "Out now as a public beta (0.5.0-beta.11). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
     changes: [
       { kind: "new", area: "App", text: "Applying a theme fades the wallpaper to the theme's video. Each of the five built-in themes now has one." },
       { kind: "new", area: "App", text: "The notch takes its glow colour and idle style from the theme: breathing, sparks, rain, a blinking pet, or none." },
@@ -29,6 +29,7 @@ export const RELEASES: Release[] = [
       { kind: "new", area: "App", text: "Beta 7: the glass sidebar. Clock, now playing, calendar, system stats and notes, from the screen edge or ⌃⌥N." },
       { kind: "fix", area: "App", text: "Beta 8: on screens without a notch the island no longer catches clicks meant for tabs. It waits a moment before opening and keeps out of full-screen apps." },
       { kind: "better", area: "App", text: "Beta 10: in full-screen apps the island looks as always and tabs under it stay clickable. Push the pointer to the top edge to open it." },
+      { kind: "fix", area: "App", text: "Beta 11: on screens without a notch the island keeps one slim size everywhere, instead of growing taller outside full-screen apps." },
     ],
   },
   {
