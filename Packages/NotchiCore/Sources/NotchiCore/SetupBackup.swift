@@ -6,6 +6,8 @@ import Foundation
 ///     manifest.json      settings and where the backup came from
 ///     Themes/            ~/Library/Application Support/Notchi/Themes
 ///     icons.json         which icons Notchi changed
+///     notes.txt          the sidebar's notes
+///     profiles.json      your saved profiles
 ///     wallpaper/<file>   the video you chose, if it's under 200 MB
 public enum SetupBackup {
     public static let fileExtension = "notchibackup"
@@ -41,6 +43,7 @@ public enum SetupBackup {
         ("activeTheme", .string), ("wallpaperVideo", .string), ("wallpaperSource", .string),
         ("replaceSystemHUD", .bool), ("batteryFPS", .int), ("pauseWhenBatteryLow", .bool),
         ("themeSetsWallpaper", .bool), ("themeTintsIcons", .bool), ("islandScreen", .string), ("hideIdleVirtualIsland", .bool),
+        ("sidebarWidgets", .string), ("sidebarEdge", .string), ("sidebarHotEdge", .bool),
     ]
 
     public struct Manifest: Codable, Equatable, Sendable {
@@ -77,6 +80,9 @@ public enum SetupBackup {
         d.dateDecodingStrategy = .iso8601
         return (e, d)
     }
+
+    /// Small files in Application Support that travel with a backup.
+    static let extraFiles = ["notes.txt", "profiles.json"]
 
     /// Every Notchi setting that is set in `defaults` right now.
     public static func currentSettings(_ defaults: UserDefaults = .standard) -> [String: Value] {
@@ -126,6 +132,11 @@ public enum SetupBackup {
         if let data = try? Data(contentsOf: icons) {
             try data.write(to: stage.appendingPathComponent("icons.json"))
             iconCount = ((try? JSONSerialization.jsonObject(with: data)) as? [Any])?.count ?? 0
+        }
+
+        // the sidebar's notes and your profiles
+        for name in extraFiles where fm.fileExists(atPath: support.appendingPathComponent(name).path) {
+            try fm.copyItem(at: support.appendingPathComponent(name), to: stage.appendingPathComponent(name))
         }
 
         // a wallpaper the user picked by hand travels with the backup when it's small enough
@@ -184,6 +195,16 @@ public enum SetupBackup {
         try? fm.removeItem(at: icons)
         let savedIcons = stage.appendingPathComponent("icons.json")
         if fm.fileExists(atPath: savedIcons.path) { try fm.moveItem(at: savedIcons, to: icons) }
+
+        // notes and profiles: only replaced when the backup has them, so an older backup
+        // never wipes notes written since
+        for name in extraFiles {
+            let saved = stage.appendingPathComponent(name)
+            guard fm.fileExists(atPath: saved.path) else { continue }
+            let here = support.appendingPathComponent(name)
+            try? fm.removeItem(at: here)
+            try fm.moveItem(at: saved, to: here)
+        }
 
         var values = m.settings
         // the video comes back to where it was, or into Notchi's own folder when that place is gone

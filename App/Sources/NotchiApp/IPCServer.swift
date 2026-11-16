@@ -85,6 +85,9 @@ final class IPCServer {
         case .open(let window):
             switch window {
             case "wallpapers": app.showWallpapers()
+            case "sidebar": app.sidebar.toggle()
+            case "sidebar-open": app.sidebar.open()
+            case "sidebar-close": app.sidebar.close()
             case "tour": app.showOnboarding()
             default: app.showSettings()
             }

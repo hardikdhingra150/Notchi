@@ -11,6 +11,7 @@ import Testing
         _ = s.file("Notchi/Themes/dusk/theme.json", String(decoding: try sampleTheme().encoded(), as: UTF8.self))
         _ = s.file("Notchi/Themes/dusk/wallpapers/dusk.mp4", "theme video")
         _ = s.file("Notchi/icons.json", #"[{"path":"/tmp/a","badge":"🚀","date":"2026-01-01T00:00:00Z"}]"#)
+        _ = s.file("Notchi/notes.txt", "buy milk")
         let video = s.file("Movies/waves.mp4", "my video")
         let d = defaults()
         d.set("dusk", forKey: "activeTheme")
@@ -44,6 +45,7 @@ import Testing
         #expect(try String(contentsOfFile: restoredVideo, encoding: .utf8) == "my video")
         #expect(try ThemePackage.read(support2.appendingPathComponent("Themes/dusk")).theme == sampleTheme())
         #expect(FileManager.default.fileExists(atPath: support2.appendingPathComponent("icons.json").path))
+        #expect(try String(contentsOf: support2.appendingPathComponent("notes.txt"), encoding: .utf8) == "buy milk")
     }
 
     @Test func restoreReplacesWhatIsThere() throws {

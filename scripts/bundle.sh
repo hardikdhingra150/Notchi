@@ -82,6 +82,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     </dict>
   </array>
   <key>NSHighResolutionCapable</key><true/>
+  <key>NSCalendarsFullAccessUsageDescription</key><string>The sidebar shows your next events. They stay on this Mac.</string>
   <key>NSAppleEventsUsageDescription</key><string>Notchi shows what's playing in Music or Spotify and lets you control it from the notch.</string>
   <key>NSHumanReadableCopyright</key><string>Free and open source under GPL-3.0.</string>
 </dict></plist>

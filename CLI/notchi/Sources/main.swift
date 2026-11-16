@@ -28,6 +28,7 @@ Usage:
   notchi theme new <id> ["Name"]     start your own theme from the active one
   notchi theme validate <file>       check a theme file without installing it
   notchi export [file]               save the active theme as a .notchitheme
+  notchi sidebar [open|close]        show the glass sidebar (or press ⌃⌥N)
   notchi profile save <name>         remember this setup (theme, wallpaper, energy, island)
   notchi profile <name>              switch to a saved profile
   notchi profile list | remove <name>
@@ -353,6 +354,13 @@ case "icon":
     default:
         fail("usage: notchi icon set|restore|list|preview (see notchi help)")
     }
+
+case "sidebar":
+    requireApp()
+    let what = args.count >= 2 ? args[1] : "toggle"
+    guard ["toggle", "open", "close"].contains(what) else { fail("usage: notchi sidebar [open|close|toggle]") }
+    IPC.send(.open(window: what == "toggle" ? "sidebar" : "sidebar-\(what)"))
+    flush()
 
 case "profile", "profiles":
     requireApp()

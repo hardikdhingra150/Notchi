@@ -107,6 +107,10 @@ final class StatusMenu: NSObject, NSMenuDelegate {
         hud.toolTip = "Shows volume and brightness changes in the notch instead of the macOS indicator."
         menu.addItem(hud)
 
+        let side = NSMenuItem(title: "Show Sidebar", action: #selector(toggleSidebar), keyEquivalent: "n")
+        side.keyEquivalentModifierMask = [.control, .option]
+        side.target = self
+        menu.addItem(side)
         menu.addItem(withTitle: "Test the Notch", action: #selector(testNotch), keyEquivalent: "t").target = self
         menu.addItem(.separator())
 
@@ -149,6 +153,7 @@ final class StatusMenu: NSObject, NSMenuDelegate {
     @objc private func resetStock() { app.setup.confirmReset() }
 
     @objc private func browseWallpapers() { app.showWallpapers() }
+    @objc private func toggleSidebar() { app.sidebar.toggle() }
     @objc private func pickProfile(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
         do { try app.setup.useProfile(name) } catch {

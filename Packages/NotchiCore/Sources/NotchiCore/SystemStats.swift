@@ -14,6 +14,11 @@ public struct SystemStats: Equatable, Sendable {
     public var downloadRate: Double
     public var uploadRate: Double
 
+    public init(cpu: Double, memoryUsed: UInt64, memoryTotal: UInt64, diskFree: Int64, diskTotal: Int64, downloadRate: Double, uploadRate: Double) {
+        self.cpu = cpu; self.memoryUsed = memoryUsed; self.memoryTotal = memoryTotal
+        self.diskFree = diskFree; self.diskTotal = diskTotal; self.downloadRate = downloadRate; self.uploadRate = uploadRate
+    }
+
     public var memoryFraction: Double { memoryTotal == 0 ? 0 : Double(memoryUsed) / Double(memoryTotal) }
     public var diskUsedFraction: Double { diskTotal == 0 ? 0 : 1 - Double(diskFree) / Double(diskTotal) }
 

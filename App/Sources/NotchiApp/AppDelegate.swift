@@ -1,6 +1,7 @@
 import AppKit
 import NotchiCore
 import NotchiNotch
+import NotchiSidebar
 import NotchiWallpaper
 
 @MainActor
@@ -15,6 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var wallpaper = WallpaperController(bus: bus, energy: energy)
     lazy var coordinator = ThemeCoordinator(app: self)
     lazy var setup = SetupManager(app: self)
+    lazy var sidebar = SidebarController(bus: bus, themes: themes, energy: energy)
     /// Files double-clicked before the app finished starting.
     private var pendingFiles: [URL] = []
     private var launched = false
@@ -37,8 +39,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             model.onPlayPause = { [weak self] in self?.nowPlaying.playPause() }
             model.onNext = { [weak self] in self?.nowPlaying.next() }
             model.onPrevious = { [weak self] in self?.nowPlaying.previous() }
-            nowPlaying.onArtwork = { img in model.artwork = img }
+            nowPlaying.onArtwork = { [weak self] img in model.artwork = img; self?.sidebar.model.artwork = img }
         }
+        let sm = sidebar.model
+        sm.onPlayPause = { [weak self] in self?.nowPlaying.playPause() }
+        sm.onNext = { [weak self] in self?.nowPlaying.next() }
+        sm.onPrevious = { [weak self] in self?.nowPlaying.previous() }
+        sm.onOpenSettings = { [weak self] in self?.sidebar.close(); self?.showSettings() }
+        sidebar.start()
         nowPlaying.start()
         battery.start()
         volume.start()

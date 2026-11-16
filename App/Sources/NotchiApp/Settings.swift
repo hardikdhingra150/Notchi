@@ -1,6 +1,7 @@
 import AppKit
 import NotchiCore
 import NotchiNotch
+import NotchiSidebar
 import SwiftUI
 
 @MainActor
@@ -8,7 +9,7 @@ final class SettingsWindowController {
     private let window: NSWindow
 
     init(app: AppDelegate) {
-        let view = SettingsView(island: app.island, themes: app.themes, hud: app.systemHUD, energy: EnergyModel(governor: app.energy, bus: app.bus),
+        let view = SettingsView(island: app.island, sidebar: app.sidebar, themes: app.themes, hud: app.systemHUD, energy: EnergyModel(governor: app.energy, bus: app.bus),
                                 coordinator: app.coordinator, setup: app.setup)
         window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "Notchi Settings"
@@ -50,6 +51,7 @@ final class EnergyModel {
 
 struct SettingsView: View {
     let island: NotchIslandController?
+    let sidebar: SidebarController
     let themes: ThemeEngine
     let hud: SystemHUD
     @Bindable var energy: EnergyModel
@@ -168,6 +170,9 @@ struct SettingsView: View {
             .formStyle(.grouped)
             .tabItem { Label("Backup", systemImage: "externaldrive") }
 
+            SidebarSettingsView(sidebar: sidebar, themes: themes)
+                .tabItem { Label("Sidebar", systemImage: "sidebar.right") }
+
             VStack(spacing: 10) {
                 Text("Notchi").font(.system(size: 34, weight: .bold, design: .serif))
                 Text("The notch, with personality.").foregroundStyle(.secondary)
@@ -198,5 +203,76 @@ struct IslandSettings: View {
         Toggle("On screens without a notch, hide the island until something happens", isOn: $hideIdle)
             .onChange(of: hideIdle) { island?.settingsChanged() }
         LabeledContent("Right now") { Text(onHardware ? "On the notch" : "A virtual island at the top of the screen") }
+    }
+}
+
+/// Settings > Sidebar: which widgets, in what order, which edge, and how it opens.
+@MainActor
+@Observable
+final class SidebarSettingsModel {
+    var widgets: [SidebarWidget] = []
+    var custom = false
+    @ObservationIgnored let sidebar: SidebarController
+    @ObservationIgnored let themes: ThemeEngine
+    init(sidebar: SidebarController, themes: ThemeEngine) { self.sidebar = sidebar; self.themes = themes; load() }
+
+    func load() {
+        custom = SidebarSettings.customWidgets != nil
+        widgets = SidebarSettings.widgets(for: themes.active)
+    }
+    func save() {
+        SidebarSettings.customWidgets = widgets
+        custom = true
+        sidebar.settingsChanged()
+    }
+    func set(_ w: SidebarWidget, _ on: Bool) {
+        if on { if !widgets.contains(w) { widgets.append(w) } } else { widgets.removeAll { $0 == w } }
+        save()
+    }
+    func move(_ i: Int, _ d: Int) { widgets.swapAt(i, i + d); save() }
+    func useTheme() { SidebarSettings.customWidgets = nil; load(); sidebar.settingsChanged() }
+}
+
+struct SidebarSettingsView: View {
+    let model: SidebarSettingsModel
+    @AppStorage(SidebarSettings.edgeKey) private var edge = SidebarSettings.Edge.right.rawValue
+    @AppStorage(SidebarSettings.hotEdgeKey) private var hotEdge = true
+
+    init(sidebar: SidebarController, themes: ThemeEngine) { model = SidebarSettingsModel(sidebar: sidebar, themes: themes) }
+
+    var body: some View {
+        Form {
+            Section {
+                Picker("Edge", selection: $edge) {
+                    Text("Right").tag(SidebarSettings.Edge.right.rawValue)
+                    Text("Left").tag(SidebarSettings.Edge.left.rawValue)
+                }
+                .onChange(of: edge) { model.sidebar.settingsChanged() }
+                Toggle("Open when the pointer rests against that edge", isOn: $hotEdge)
+                LabeledContent("Shortcut") { Text(model.sidebar.shortcutWorks ? SidebarController.shortcut : "\(SidebarController.shortcut) (taken by another app)") }
+                LabeledContent("Try it") { Button("Show Sidebar") { model.sidebar.open() } }
+            }
+            Section {
+                ForEach(SidebarWidget.allCases) { w in
+                    HStack {
+                        Toggle(isOn: Binding(get: { model.widgets.contains(w) }, set: { model.set(w, $0) })) { Label(w.title, systemImage: w.symbol) }
+                        Spacer()
+                        if let i = model.widgets.firstIndex(of: w) {
+                            Button { model.move(i, -1) } label: { Image(systemName: "chevron.up") }.disabled(i == 0).buttonStyle(.borderless)
+                                .accessibilityLabel("Move \(w.title) up")
+                            Button { model.move(i, 1) } label: { Image(systemName: "chevron.down") }.disabled(i == model.widgets.count - 1).buttonStyle(.borderless)
+                                .accessibilityLabel("Move \(w.title) down")
+                        }
+                    }
+                }
+                if model.custom { Button("Use the theme's widgets") { model.useTheme() } }
+            } header: {
+                Text("Widgets, top to bottom")
+            } footer: {
+                Text(model.custom ? "Your own list. Themes no longer change it." : "Following the theme (\(model.themes.active.name)). Change anything to make the list your own.")
+            }
+        }
+        .formStyle(.grouped)
+        .onAppear { model.load() }
     }
 }

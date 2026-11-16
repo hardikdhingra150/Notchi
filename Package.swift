@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "NotchiNotch", targets: ["NotchiNotch"]),
         .library(name: "NotchiWallpaper", targets: ["NotchiWallpaper"]),
         .library(name: "NotchiIcons", targets: ["NotchiIcons"]),
+        .library(name: "NotchiSidebar", targets: ["NotchiSidebar"]),
     ],
     dependencies: [
         // auto-updates, with its own free EdDSA signing (blueprint section 13)
@@ -21,9 +22,10 @@ let package = Package(
         .target(name: "NotchiNotch", dependencies: ["NotchiCore"], path: "Packages/NotchiNotch/Sources/NotchiNotch"),
         .target(name: "NotchiWallpaper", dependencies: ["NotchiCore"], path: "Packages/NotchiWallpaper/Sources/NotchiWallpaper"),
         .target(name: "NotchiIcons", dependencies: ["NotchiCore"], path: "Packages/NotchiIcons/Sources/NotchiIcons"),
+        .target(name: "NotchiSidebar", dependencies: ["NotchiCore"], path: "Packages/NotchiSidebar/Sources/NotchiSidebar"),
         .executableTarget(
             name: "NotchiApp",
-            dependencies: ["NotchiCore", "NotchiNotch", "NotchiWallpaper", "NotchiIcons", .product(name: "Sparkle", package: "Sparkle")],
+            dependencies: ["NotchiCore", "NotchiNotch", "NotchiWallpaper", "NotchiIcons", "NotchiSidebar", .product(name: "Sparkle", package: "Sparkle")],
             path: "App/Sources/NotchiApp",
             // Sparkle.framework is copied into Notchi.app/Contents/Frameworks by scripts/bundle.sh
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
@@ -31,6 +33,7 @@ let package = Package(
         .executableTarget(name: "notchi", dependencies: ["NotchiCore", "NotchiIcons", "NotchiWallpaper"], path: "CLI/notchi/Sources"),
         .testTarget(name: "NotchiCoreTests", dependencies: ["NotchiCore"], path: "Tests/NotchiCoreTests"),
         .testTarget(name: "NotchiIconsTests", dependencies: ["NotchiIcons"], path: "Tests/NotchiIconsTests"),
+        .testTarget(name: "NotchiSidebarTests", dependencies: ["NotchiSidebar"], path: "Tests/NotchiSidebarTests"),
         .testTarget(name: "NotchiWallpaperTests", dependencies: ["NotchiWallpaper"], path: "Tests/NotchiWallpaperTests"),
     ]
 )
