@@ -85,6 +85,16 @@ They always pause in Low Power Mode, when the Mac is hot, when the battery is be
 (you can turn that one off), and when the wallpaper is covered or the display is asleep.
 Settings → Energy shows the current speed and the reason.
 
+## The glass sidebar (v1.0 preview)
+
+A frosted panel at the edge of the screen with a clock, what's playing, this month's
+calendar, CPU, memory, disk, battery and network, and a notes pad. Rest the pointer against
+the right edge, press **⌃⌥N**, or run `notchi sidebar`. It takes the theme's colour and
+glass, and shows the theme's widgets unless you choose your own in Settings → Sidebar.
+
+Your calendar events appear only after you press *Show my events* and allow access. Notes
+stay on your Mac (and in backups). Stats are only read while the sidebar is open.
+
 ## Repo layout
 
 | Folder | What it is |
@@ -93,6 +103,7 @@ Settings → Energy shows the current speed and the reason.
 | `App/` | The menu-bar app (`Notchi.app`) |
 | `Packages/NotchiCore` | Theme engine, event bus, energy governor, notch detection, Now Playing, battery |
 | `Packages/NotchiNotch` | The notch island and its live activities |
+| `Packages/NotchiSidebar` | The glass sidebar and its widgets |
 | `CLI/notchi` | The `notchi` command-line tool |
 | `Themes/` | Built-in themes |
 | `PROJECT_BLUEPRINT.md` | The full product plan |
@@ -126,6 +137,7 @@ notchi apply midnight                  # apply a theme
 notchi theme list                      # list themes
 notchi theme install cool.notchitheme  # install a theme
 notchi backup                          # save your whole setup in one file
+notchi sidebar                         # show or hide the glass sidebar (⌃⌥N)
 notchi status                          # what the notch is showing
 notchi doctor                          # check setup and conflicts
 ```

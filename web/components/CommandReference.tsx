@@ -34,8 +34,16 @@ const GROUPS = [
     ],
   },
   {
+    name: "Sidebar",
+    cmds: [
+      ["notchi sidebar", "Show or hide the glass sidebar. Same as ⌃⌥N."],
+      ["notchi sidebar open", "Open it, for scripts."],
+    ],
+  },
+  {
     name: "Wallpaper",
     cmds: [
+      ["notchi wallpaper get earth-cloud-deck", "Download one from the library and use it."],
       ["notchi wallpaper set ~/Movies/waves.mp4", "Loop a video behind your desktop icons."],
       ["notchi wallpaper off", "Back to your normal wallpaper."],
     ],

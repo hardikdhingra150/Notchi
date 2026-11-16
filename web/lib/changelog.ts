@@ -8,7 +8,7 @@ export const RELEASES: Release[] = [
     label: "Themes",
     date: "2026-11-10",
     status: "released",
-    summary: "Out now as a public beta (0.5.0-beta.5). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
+    summary: "Out now as a public beta (0.5.0-beta.6). One theme now changes the desktop together, themes can be shared as a single file, and your whole setup fits in one backup.",
     changes: [
       { kind: "new", area: "App", text: "Applying a theme fades the wallpaper to the theme's video. Each of the five built-in themes now has one." },
       { kind: "new", area: "App", text: "The notch takes its glow colour and idle style from the theme: breathing, sparks, rain, a blinking pet, or none." },
@@ -26,6 +26,7 @@ export const RELEASES: Release[] = [
       { kind: "new", area: "App", text: "Beta 5: profiles. Save a setup as \"Work\" or \"Night\" and switch back to it in one click or with notchi profile." },
       { kind: "new", area: "App", text: "Beta 5: choose which screen the island lives on, and hide it while idle on screens without a notch." },
       { kind: "new", area: "App", text: "Beta 5: install with Homebrew." },
+      { kind: "new", area: "App", text: "Beta 6: the glass sidebar. Clock, now playing, calendar, system stats and notes, from the screen edge or ⌃⌥N." },
     ],
   },
   {
