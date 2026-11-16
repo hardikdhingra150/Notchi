@@ -31,7 +31,10 @@ final class CalendarSource {
     }
 
     func requestAccess() async -> Bool {
-        (try? await store.requestFullAccessToEvents()) ?? false
+        // the completion-handler form, so the store never leaves the main actor
+        await withCheckedContinuation { (done: CheckedContinuation<Bool, Never>) in
+            store.requestFullAccessToEvents { granted, _ in done.resume(returning: granted) }
+        }
     }
 
     /// The next few events from now until the end of tomorrow.
